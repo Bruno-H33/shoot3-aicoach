@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, RotateCcw, Play, Square } from "lucide-react";
+import { X, SwitchCamera, Play, Square } from "lucide-react";
 
 interface CameraViewProps {
   onComplete: () => void;
@@ -27,6 +27,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [terminalProgress, setTerminalProgress] = useState(0);
   const [cameraError, setCameraError] = useState(false);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -34,11 +35,13 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   useEffect(() => {
     const startCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        setCameraError(false);
       } catch {
         setCameraError(true);
       }
@@ -47,7 +50,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+  }, [facingMode]);
 
   // Countdown logic
   useEffect(() => {
@@ -98,11 +101,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     }
   };
 
-  const handleReset = () => {
-    setPhase("idle");
-    setCountdown(COUNTDOWN);
-    setTimeLeft(RECORDING_TIME);
-    setShowFeedback(false);
+  const handleFlipCamera = () => {
+    setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
   };
 
   return (
@@ -225,10 +225,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
             </button>
 
             <button
-              onClick={handleReset}
+              onClick={handleFlipCamera}
               className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15"
             >
-              <RotateCcw className="w-6 h-6 text-foreground" />
+              <SwitchCamera className="w-6 h-6 text-foreground" />
             </button>
           </div>
         )}

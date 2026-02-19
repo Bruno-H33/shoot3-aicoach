@@ -26,7 +26,7 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: Paywall
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-[430px] rounded-t-3xl overflow-hidden animate-fade-in-up"
+        className="relative w-full max-w-[430px] rounded-t-3xl overflow-y-auto max-h-[92dvh] animate-fade-in-up"
         style={{
           background: "rgba(14,10,8,0.97)",
           border: "1.5px solid hsl(var(--neon-orange))",
