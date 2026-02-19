@@ -106,7 +106,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   };
 
   return (
-    <div className="mobile-container flex flex-col bg-black relative overflow-hidden">
+    <div className="mobile-container flex flex-col bg-black relative overflow-hidden h-[100dvh]">
       {/* Camera feed or dark fallback */}
       {!cameraError ? (
         <video
@@ -135,10 +135,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         </div>
 
         {/* Corner brackets */}
-        <div className="absolute top-24 left-8 w-10 h-10 border-t-2 border-l-2 border-primary rounded-tl" />
-        <div className="absolute top-24 right-8 w-10 h-10 border-t-2 border-r-2 border-primary rounded-tr" />
-        <div className="absolute bottom-28 left-8 w-10 h-10 border-b-2 border-l-2 border-primary rounded-bl" />
-        <div className="absolute bottom-28 right-8 w-10 h-10 border-b-2 border-r-2 border-primary rounded-br" />
+        <div className="absolute top-28 left-8 w-10 h-10 border-t-2 border-l-2 border-primary rounded-tl" />
+        <div className="absolute top-28 right-8 w-10 h-10 border-t-2 border-r-2 border-primary rounded-tr" />
+        <div className="absolute bottom-36 left-8 w-10 h-10 border-b-2 border-l-2 border-primary rounded-bl" />
+        <div className="absolute bottom-36 right-8 w-10 h-10 border-b-2 border-r-2 border-primary rounded-br" />
 
         {/* Scanner line */}
         {phase === "recording" && <div className="scanner-line absolute left-0 right-0" />}
@@ -202,7 +202,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
         {/* Bottom controls */}
         {phase !== "processing" && (
-          <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-10">
+          <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-10">
             <button
               onClick={onClose}
               className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15"
