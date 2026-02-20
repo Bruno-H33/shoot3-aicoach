@@ -43,7 +43,7 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
   return bytes.buffer;
 };
 
-const playGeminiVoice = async (text: string): Promise<void> => {
+const fetchAndCacheVoice = async (text: string): Promise<string | null> => {
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/gemini-tts`, {
       method: "POST",
@@ -55,18 +55,26 @@ const playGeminiVoice = async (text: string): Promise<void> => {
       const audioData = data.candidates[0].content.parts[0].inlineData.data;
       const arrayBuffer = base64ToArrayBuffer(audioData);
       const wavBlob = pcmToWav(arrayBuffer, 24000);
-      const audioUrl = URL.createObjectURL(wavBlob);
-      const audio = new Audio(audioUrl);
-      return new Promise((resolve) => {
-        audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(); };
-        audio.onerror = () => resolve();
-        audio.play();
-      });
+      return URL.createObjectURL(wavBlob);
     }
   } catch (e) {
-    console.error("Gemini TTS Error", e);
+    console.error("Gemini TTS prefetch error", e);
   }
+  return null;
 };
+
+const playAudioUrl = (url: string): Promise<void> =>
+  new Promise((resolve) => {
+    const audio = new Audio(url);
+    audio.onended = () => resolve();
+    audio.onerror = () => resolve();
+    audio.play().catch(() => resolve());
+  });
+
+
+
+
+
 
 const terminalLines = [
   "IMPORTATION DES FRAMES...",
@@ -87,6 +95,33 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  // Pre-fetched audio cache: [go, elbow, done]
+  const audioCacheRef = useRef<(string | null)[]>([null, null, null]);
+
+  const playVoice = async (index: 0 | 1 | 2): Promise<void> => {
+    const url = audioCacheRef.current[index];
+    if (url) {
+      await playAudioUrl(url);
+    }
+  };
+
+  // Pre-fetch all audio lines as soon as the component mounts
+  useEffect(() => {
+    const lines = [
+      "C'est parti !",
+      "Attention ! Ton coude s'ouvre trop vers l'extérieur.",
+      "Terminé, analyse en cours.",
+    ];
+    lines.forEach((text, i) => {
+      fetchAndCacheVoice(text).then((url) => {
+        audioCacheRef.current[i] = url;
+      });
+    });
+    return () => {
+      // Revoke cached object URLs on unmount
+      audioCacheRef.current.forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    };
+  }, []);
 
   // Try to start camera
   useEffect(() => {
@@ -109,20 +144,19 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, [facingMode]);
 
-  // Countdown logic — timer-driven, Gemini TTS fires once at the end
+  // Countdown logic — plays "C'est parti !" from cache (instant)
   useEffect(() => {
     if (phase !== "countdown") return;
 
     const runCountdown = async (n: number) => {
       if (n <= 0) {
         setCountdown(0);
-        await playGeminiVoice("C'est parti !");
+        await playVoice(0);
         setPhase("recording");
         setTimeLeft(RECORDING_TIME);
         return;
       }
       setCountdown(n);
-      // Short visual delay between numbers, no TTS for each digit
       await new Promise((res) => setTimeout(res, 950));
       runCountdown(n - 1);
     };
@@ -130,15 +164,15 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     runCountdown(COUNTDOWN);
   }, [phase]);
 
-  // Recording logic
+  // Recording logic — plays from cache (instant, no network wait)
   useEffect(() => {
     if (phase !== "recording") return;
     if (timeLeft === 15) {
       setShowFeedback(true);
-      playGeminiVoice("Attention ! Ton coude s'ouvre trop vers l'extérieur.");
+      playVoice(1);
     }
     if (timeLeft <= 0) {
-      playGeminiVoice("Terminé, analyse en cours.");
+      playVoice(2);
       setPhase("processing");
       setTerminalProgress(0);
       return;
@@ -170,10 +204,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     }
   };
 
-
   const handleFlipCamera = () => {
     setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
   };
+
 
   return (
     <div className="mobile-container flex flex-col bg-black relative overflow-hidden h-[100dvh]">
