@@ -22,7 +22,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
       <div className="flex-1 overflow-y-auto pb-28">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-12 pb-4">
-          <div className="flex items-center gap-3">
+          <button onClick={() => onTabChange("studio")} className="flex items-center gap-3 active:opacity-70 transition-opacity">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: "linear-gradient(135deg, hsl(18 80% 30%), hsl(18 100% 40%))" }}
@@ -32,7 +32,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
             <span className="font-sport text-2xl tracking-wider">
               SHOOT<span className="text-primary">3</span>
             </span>
-          </div>
+          </button>
           <div className="relative w-11 h-11 rounded-full glass flex items-center justify-center">
             <Bell className="w-5 h-5 text-muted-foreground" />
             <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
@@ -172,7 +172,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
 
             {/* Section label */}
             <div>
-              <p className="font-body text-xs text-muted-foreground tracking-widest uppercase mb-1">Boutique</p>
+              <p className="font-body text-xs text-muted-foreground tracking-widest uppercase mb-1">Offres Premium</p>
               <h3 className="font-sport text-3xl text-foreground">PASSE AU <span className="text-primary">NIVEAU SUP</span></h3>
             </div>
 

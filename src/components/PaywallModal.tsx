@@ -97,8 +97,8 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: Paywall
                 <button
                   onClick={() => handleLogin("apple")}
                   disabled={!!loading}
-                  className="w-full flex items-center justify-center gap-3 border border-white/20 text-foreground font-body font-bold py-4 rounded-2xl transition-all active:scale-98 disabled:opacity-70"
-                  style={{ background: "rgba(255,255,255,0.05)" }}
+                  className="w-full flex items-center justify-center gap-3 border text-foreground font-body font-bold py-4 rounded-2xl transition-all active:scale-98 disabled:opacity-70"
+                  style={{ background: "rgba(40,40,40,0.8)", borderColor: "rgba(120,120,120,0.5)" }}
                 >
                   {loading === "apple" ? (
                     <div className="w-5 h-5 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
