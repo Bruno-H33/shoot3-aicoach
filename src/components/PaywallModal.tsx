@@ -152,7 +152,7 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: Paywall
                   <span className="font-sport text-xl text-foreground tracking-wider">DÉBLOQUE LA SOLUTION</span>
                 </div>
                 <p className="font-body text-sm text-foreground/80 mb-4 leading-relaxed">
-                  Obtiens le Rapport PDF complet incluant le plan d'entraînement sur 30 jours pour corriger ce défaut précis.
+                  Obtiens le Rapport PDF complet qui inclue le plan d'action pour corriger ça.
                 </p>
                 <button className="w-full bg-foreground text-background font-sport text-lg tracking-widest py-3 rounded-xl transition-all active:scale-98">
                   ACHETER LE RAPPORT - 9.99€

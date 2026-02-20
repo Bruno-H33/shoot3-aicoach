@@ -14,7 +14,7 @@ const postes = [
 const objectifs = [
   { id: "regularite", label: "Régularité", desc: "Être constant match après match." },
   { id: "vitesse", label: "Vitesse", desc: "Shooter plus vite en situation de jeu." },
-  { id: "portee", label: "Portée", desc: "Allonger ta zone de tir efficace." },
+  { id: "portee", label: "Distance", desc: "Allonger ta zone de tir efficace." },
 ];
 
 const Onboarding = ({ onComplete }: OnboardingProps) => {
