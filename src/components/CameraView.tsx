@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, SwitchCamera, Play, Square } from "lucide-react";
 
 interface CameraViewProps {
@@ -8,11 +8,20 @@ interface CameraViewProps {
 
 type Phase = "idle" | "countdown" | "recording" | "processing";
 
+interface ShotIssue {
+  key: string;
+  label: string;
+  severity: "low" | "medium" | "high";
+  feedback_fr: string;
+}
+
 const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
+const ANALYSIS_INTERVAL = 5000; // analyse toutes les 5 secondes
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
+// --- Audio helpers (unchanged) ---
 const pcmToWav = (pcmData: ArrayBuffer, sampleRate: number): Blob => {
   const header = new ArrayBuffer(44);
   const view = new DataView(header);
@@ -43,7 +52,7 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
   return bytes.buffer;
 };
 
-const fetchAndCacheVoice = async (text: string): Promise<string | null> => {
+const fetchTtsAudio = async (text: string): Promise<string | null> => {
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/gemini-tts`, {
       method: "POST",
@@ -58,7 +67,7 @@ const fetchAndCacheVoice = async (text: string): Promise<string | null> => {
       return URL.createObjectURL(wavBlob);
     }
   } catch (e) {
-    console.error("Gemini TTS prefetch error", e);
+    console.error("Gemini TTS error", e);
   }
   return null;
 };
@@ -71,10 +80,17 @@ const playAudioUrl = (url: string): Promise<void> =>
     audio.play().catch(() => resolve());
   });
 
-
-
-
-
+// --- Frame capture helper ---
+const captureFrame = (video: HTMLVideoElement, quality = 0.6): string | null => {
+  const canvas = document.createElement("canvas");
+  // Downsample for speed
+  canvas.width = 480;
+  canvas.height = 640;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+};
 
 const terminalLines = [
   "IMPORTATION DES FRAMES...",
@@ -89,69 +105,116 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(COUNTDOWN);
   const [timeLeft, setTimeLeft] = useState(RECORDING_TIME);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [liveIssues, setLiveIssues] = useState<ShotIssue[]>([]);
   const [terminalProgress, setTerminalProgress] = useState(0);
   const [cameraError, setCameraError] = useState(false);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  // Pre-fetched audio cache: [go, elbow, done]
-  const audioCacheRef = useRef<(string | null)[]>([null, null, null]);
+  const analysisAbortRef = useRef<AbortController | null>(null);
+  const isSpeakingRef = useRef(false);
+  const ttsUrlsRef = useRef<string[]>([]);
 
-  const playVoice = async (index: 0 | 1 | 2): Promise<void> => {
-    const url = audioCacheRef.current[index];
-    if (url) {
-      await playAudioUrl(url);
-    }
-  };
+  // Pre-fetch static voice lines (go + done)
+  const goCacheRef = useRef<string | null>(null);
+  const doneCacheRef = useRef<string | null>(null);
 
-  // Pre-fetch all audio lines as soon as the component mounts
   useEffect(() => {
-    const lines = [
-      "C'est parti !",
-      "Attention ! Ton coude s'ouvre trop vers l'extérieur.",
-      "Terminé, analyse en cours.",
-    ];
-    lines.forEach((text, i) => {
-      fetchAndCacheVoice(text).then((url) => {
-        audioCacheRef.current[i] = url;
-      });
-    });
+    fetchTtsAudio("C'est parti !").then((u) => { goCacheRef.current = u; });
+    fetchTtsAudio("Terminé, analyse en cours.").then((u) => { doneCacheRef.current = u; });
     return () => {
-      // Revoke cached object URLs on unmount
-      audioCacheRef.current.forEach((url) => { if (url) URL.revokeObjectURL(url); });
+      if (goCacheRef.current) URL.revokeObjectURL(goCacheRef.current);
+      if (doneCacheRef.current) URL.revokeObjectURL(doneCacheRef.current);
+      ttsUrlsRef.current.forEach((u) => URL.revokeObjectURL(u));
     };
   }, []);
 
-  // Try to start camera
+  // Camera start
   useEffect(() => {
     const startCamera = async () => {
       try {
         streamRef.current?.getTracks().forEach((t) => t.stop());
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
         streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
+        if (videoRef.current) videoRef.current.srcObject = stream;
         setCameraError(false);
       } catch {
         setCameraError(true);
       }
     };
     startCamera();
-    return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
+    return () => { streamRef.current?.getTracks().forEach((t) => t.stop()); };
   }, [facingMode]);
 
-  // Countdown logic — plays "C'est parti !" from cache (instant)
+  // --- Speak feedback (TTS), non-blocking queue ---
+  const speakFeedback = useCallback(async (text: string) => {
+    if (isSpeakingRef.current) return; // skip if already speaking
+    isSpeakingRef.current = true;
+    const url = await fetchTtsAudio(text);
+    if (url) {
+      ttsUrlsRef.current.push(url);
+      await playAudioUrl(url);
+    }
+    isSpeakingRef.current = false;
+  }, []);
+
+  // --- Periodic AI analysis during recording ---
+  useEffect(() => {
+    if (phase !== "recording") return;
+
+    const analyze = async () => {
+      if (!videoRef.current) return;
+      const frame = captureFrame(videoRef.current);
+      if (!frame) return;
+
+      try {
+        const controller = new AbortController();
+        analysisAbortRef.current = controller;
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ frames: [frame] }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.issues && data.issues.length > 0) {
+          setLiveIssues(data.issues);
+          // Speak the most severe issue
+          const sorted = [...data.issues].sort((a, b) => {
+            const sev = { high: 3, medium: 2, low: 1 };
+            return sev[b.severity] - sev[a.severity];
+          });
+          speakFeedback(sorted[0].feedback_fr);
+        } else if (data.overall_score >= 0) {
+          setLiveIssues([]);
+        }
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") console.error("Analysis error", e);
+      }
+    };
+
+    // First analysis after 3s, then every ANALYSIS_INTERVAL
+    const initial = setTimeout(analyze, 3000);
+    const interval = setInterval(analyze, ANALYSIS_INTERVAL);
+
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+      analysisAbortRef.current?.abort();
+    };
+  }, [phase, speakFeedback]);
+
+  // Countdown
   useEffect(() => {
     if (phase !== "countdown") return;
-
     const runCountdown = async (n: number) => {
       if (n <= 0) {
         setCountdown(0);
-        await playVoice(0);
+        if (goCacheRef.current) await playAudioUrl(goCacheRef.current);
         setPhase("recording");
         setTimeLeft(RECORDING_TIME);
         return;
@@ -160,24 +223,19 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       await new Promise((res) => setTimeout(res, 950));
       runCountdown(n - 1);
     };
-
     runCountdown(COUNTDOWN);
   }, [phase]);
 
-  // Recording logic — plays from cache (instant, no network wait)
+  // Recording timer
   useEffect(() => {
     if (phase !== "recording") return;
-    if (timeLeft === 15) {
-      setShowFeedback(true);
-      playVoice(1);
-    }
     if (timeLeft <= 0) {
-      playVoice(2);
+      if (doneCacheRef.current) playAudioUrl(doneCacheRef.current);
       setPhase("processing");
       setTerminalProgress(0);
       return;
     }
-    const t = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
+    const t = setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => clearTimeout(t);
   }, [phase, timeLeft]);
 
@@ -200,7 +258,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const handleRecord = () => {
     if (phase === "idle") {
       setPhase("countdown");
-      setShowFeedback(false);
+      setLiveIssues([]);
     }
   };
 
@@ -208,32 +266,28 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
   };
 
+  const severityColor = (s: string) => {
+    if (s === "high") return "bg-destructive";
+    if (s === "medium") return "bg-orange-500";
+    return "bg-yellow-500";
+  };
 
   return (
     <div className="mobile-container flex flex-col bg-black relative overflow-hidden h-[100dvh]">
-      {/* Camera feed or dark fallback */}
       {!cameraError ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-black to-zinc-950" />
       )}
 
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/40" />
 
-      {/* Content overlay */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Top badge */}
         <div className="flex justify-center pt-14">
           <div className="glass px-6 py-2 rounded-full border border-white/15">
             <span className="font-body text-xs tracking-[0.3em] text-foreground uppercase">
-              Test de Niveau Gratuit
+              {phase === "recording" ? "Analyse IA en direct" : "Test de Niveau Gratuit"}
             </span>
           </div>
         </div>
@@ -269,19 +323,28 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
           </div>
         )}
 
-        {/* Live AI Feedback */}
-        {showFeedback && phase === "recording" && (
-          <div
-            className="absolute top-52 left-6 right-6 rounded-2xl p-4 animate-fade-in-up border border-destructive/40"
-            style={{ background: "rgba(220, 38, 38, 0.15)", backdropFilter: "blur(16px)" }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse flex-shrink-0" />
-              <div>
-                <p className="font-body text-xs text-destructive font-bold tracking-widest uppercase">⚡ Feedback Live IA</p>
-                <p className="font-body text-sm text-foreground mt-1">Attention : <span className="text-destructive font-bold">Coude Ouvert !</span></p>
+        {/* Live AI Feedback — dynamic from real analysis */}
+        {phase === "recording" && liveIssues.length > 0 && (
+          <div className="absolute top-52 left-6 right-6 space-y-3">
+            {liveIssues.map((issue) => (
+              <div
+                key={issue.key}
+                className="rounded-2xl p-4 animate-fade-in-up border border-destructive/40"
+                style={{ background: "rgba(220, 38, 38, 0.15)", backdropFilter: "blur(16px)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${severityColor(issue.severity)} animate-pulse flex-shrink-0`} />
+                  <div>
+                    <p className="font-body text-xs text-destructive font-bold tracking-widest uppercase">
+                      ⚡ Feedback Live IA
+                    </p>
+                    <p className="font-body text-sm text-foreground mt-1">
+                      {issue.feedback_fr}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
 
@@ -307,14 +370,9 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         {/* Bottom controls */}
         {phase !== "processing" && (
           <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-10">
-            <button
-              onClick={onClose}
-              className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15"
-            >
+            <button onClick={onClose} className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15">
               <X className="w-6 h-6 text-foreground" />
             </button>
-
-            {/* Main record button */}
             <button
               onClick={handleRecord}
               disabled={phase === "countdown" || phase === "recording"}
@@ -327,11 +385,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
                 <Square className="w-8 h-8 text-primary-foreground fill-primary-foreground" />
               )}
             </button>
-
-            <button
-              onClick={handleFlipCamera}
-              className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15"
-            >
+            <button onClick={handleFlipCamera} className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15">
               <SwitchCamera className="w-6 h-6 text-foreground" />
             </button>
           </div>
