@@ -510,7 +510,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
-                {["Accès à la communauté privée", "Lives mensuels avec invités Pros", "Participations aux Défis et Events", "CV Sportif Certifié (après 3 mois)"].map((f) => (
+                {["Accès à la communauté privée", "Lives mensuels avec invités Pros", "Participations aux Défis et Events", "Shoot3 ID : Ton CV Sportif Certifié (en 3 mois)"].map((f) => (
                   <li key={f} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
                     <span className="font-body text-xs text-foreground/70">{f}</span>
