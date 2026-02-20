@@ -80,41 +80,89 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
               </p>
             </div>
 
-            {/* Heatmap IA - Locked */}
+            {/* Heatmap (7J) - Locked with real content preview */}
             <div
-              className="rounded-2xl p-5 border border-white/8 relative overflow-hidden"
-              style={{ background: "rgba(10,10,10,0.8)" }}
+              className="rounded-2xl p-5 border border-white/10 relative overflow-hidden"
+              style={{ background: "rgba(10,10,10,0.85)" }}
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-sport text-2xl text-foreground/50">HEATMAP IA</h3>
-                <Lock className="w-5 h-5 text-muted-foreground" />
+              {/* Real content (blurred + dimmed) */}
+              <div className="opacity-30 grayscale blur-[2px] pointer-events-none">
+                <div className="flex items-center justify-between mb-1">
+                  <div>
+                    <h3 className="font-sport text-xl text-foreground tracking-wider">Heatmap (7J)</h3>
+                    <p className="font-body text-xs text-muted-foreground">Volume et réussite sur la semaine</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-sport text-2xl text-green-400">74%</p>
+                    <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">Réussite</p>
+                  </div>
+                </div>
+                {/* Mini bar chart - 7 bars */}
+                <div className="flex items-end gap-1.5 h-16 mt-4">
+                  {[
+                    { h: "35%", color: "#7f1d1d" },
+                    { h: "55%", color: "#374151" },
+                    { h: "65%", color: "#14532d" },
+                    { h: "45%", color: "#7f1d1d" },
+                    { h: "80%", color: "#16a34a" },
+                    { h: "90%", color: "#22c55e" },
+                    { h: "100%", color: "hsl(18 100% 50%)" },
+                  ].map((bar, i) => (
+                    <div key={i} className="flex-1 flex flex-col justify-end">
+                      <div
+                        className="w-full rounded-t-md"
+                        style={{ height: bar.h, backgroundColor: bar.color, minHeight: "8px" }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between mt-1">
+                  {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
+                    <span key={i} className="flex-1 text-center font-body text-[9px] text-muted-foreground">{d}</span>
+                  ))}
+                </div>
               </div>
-              <p className="font-body text-sm text-muted-foreground mb-4">
-                Passe ton test pour débloquer tes statistiques.
-              </p>
-              <div className="flex gap-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex-1 h-10 rounded-xl bg-muted/50 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
-                ))}
+              {/* Lock overlay */}
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <span className="font-body text-[10px] text-muted-foreground tracking-widest uppercase">Test requis</span>
+                </div>
               </div>
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] rounded-2xl" />
             </div>
 
-            {/* Team Shoot3 - Locked */}
+            {/* Team Shoot3 - Locked with real content preview */}
             <div
-              className="rounded-2xl p-5 border border-white/8 relative overflow-hidden flex items-center gap-4"
-              style={{ background: "rgba(10,10,10,0.8)" }}
+              className="rounded-2xl p-5 border border-blue-500/15 relative overflow-hidden"
+              style={{ background: "rgba(8,10,20,0.9)" }}
             >
-              <div className="w-14 h-14 rounded-2xl bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                <User className="w-7 h-7 text-blue-400/60" />
+              {/* Real content (blurred + dimmed) */}
+              <div className="opacity-30 grayscale blur-[2px] pointer-events-none flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-900/60 flex items-center justify-center flex-shrink-0">
+                  <User className="w-7 h-7 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-sport text-xl text-foreground tracking-wider">Team Shoot3</h3>
+                  <p className="font-body text-xs text-blue-400/80">Rejoins la ligue &amp; Défie les pros</p>
+                  <div className="flex gap-2 mt-2">
+                    {["Ligue", "Défis", "Live Pro"].map((tag) => (
+                      <span key={tag} className="font-body text-[9px] border border-blue-500/40 text-blue-300 px-2 py-0.5 rounded-full">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col items-center text-right flex-shrink-0">
+                  <p className="font-sport text-2xl text-blue-300">247</p>
+                  <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">Membres</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-sport text-xl text-foreground/50">Team Shoot3</h3>
-                <p className="font-body text-xs text-muted-foreground">Rejoins la communauté</p>
+              {/* Lock overlay */}
+              <div className="absolute top-3 right-3">
+                <div className="w-8 h-8 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                </div>
               </div>
-              <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] rounded-2xl" />
             </div>
           </div>
         )}
