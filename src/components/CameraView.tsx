@@ -52,13 +52,12 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, [facingMode]);
 
-  // Voice synthesis helper
+  // Voice synthesis helper — no cancel() to avoid startup delay
   const speak = (text: string) => {
     if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "fr-FR";
-    utter.rate = 0.9;
+    utter.rate = 0.95;
     utter.pitch = 1.1;
     utter.volume = 1;
     window.speechSynthesis.speak(utter);
@@ -68,7 +67,9 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   useEffect(() => {
     if (phase !== "countdown") return;
     if (countdown <= 0) {
-      speak("Partez ! Tirez maintenant !");
+      // Cancel previous (the last number) then say go
+      window.speechSynthesis.cancel();
+      speak("C'est parti !");
       setPhase("recording");
       setTimeLeft(RECORDING_TIME);
       return;
@@ -83,7 +84,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     if (phase !== "recording") return;
     if (timeLeft === 15) {
       setShowFeedback(true);
-      speak("Attention ! Coude ouvert !");
+      speak("Ton coude part un peu trop à l'extérieur !");
     }
     if (timeLeft <= 0) {
       speak("Analyse terminée. Traitement en cours.");
@@ -113,6 +114,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
   const handleRecord = () => {
     if (phase === "idle") {
+      // Speak immediately on tap — before any state update to avoid delay
+      speak("Mise en place !");
       setCountdown(COUNTDOWN);
       setPhase("countdown");
       setShowFeedback(false);
