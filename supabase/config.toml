@@ -1,1 +1,7 @@
 project_id = "vhibepgjkbtcjzrkyvpg"
+
+[functions.analyze-shot]
+verify_jwt = false
+
+[functions.gemini-tts]
+verify_jwt = false
