@@ -52,14 +52,28 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, [facingMode]);
 
+  // Voice synthesis helper
+  const speak = (text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "fr-FR";
+    utter.rate = 0.9;
+    utter.pitch = 1.1;
+    utter.volume = 1;
+    window.speechSynthesis.speak(utter);
+  };
+
   // Countdown logic
   useEffect(() => {
     if (phase !== "countdown") return;
     if (countdown <= 0) {
+      speak("Partez ! Tirez maintenant !");
       setPhase("recording");
       setTimeLeft(RECORDING_TIME);
       return;
     }
+    speak(String(countdown));
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [phase, countdown]);
@@ -67,8 +81,12 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   // Recording logic
   useEffect(() => {
     if (phase !== "recording") return;
-    if (timeLeft === 15) setShowFeedback(true);
+    if (timeLeft === 15) {
+      setShowFeedback(true);
+      speak("Attention ! Coude ouvert !");
+    }
     if (timeLeft <= 0) {
+      speak("Analyse terminée. Traitement en cours.");
       setPhase("processing");
       setTerminalProgress(0);
       return;
