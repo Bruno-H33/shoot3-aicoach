@@ -57,6 +57,7 @@ const Index = () => {
         {view === "dashboard" && (
           <Dashboard
             userName={userName || "Joueur"}
+            hasCompletedTest={isRegistered}
             onAnalyze={handleAnalyze}
             activeTab={activeTab}
             onTabChange={setActiveTab}
