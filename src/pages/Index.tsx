@@ -1,24 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import SplashScreen from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
 import CameraView from "@/components/CameraView";
 import PaywallModal from "@/components/PaywallModal";
+import AuthPrompt from "@/components/AuthPrompt";
 
-type View = "splash" | "onboarding" | "dashboard" | "camera";
+type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [view, setView] = useState<View>("splash");
   const [userName, setUserName] = useState("");
-  const [_hasCompletedTest, setHasCompletedTest] = useState(false);
+  const [onboardingData, setOnboardingData] = useState<{ position: string; objective: string } | null>(null);
+  const [hasCompletedTest, setHasCompletedTest] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeTab, setActiveTab] = useState("studio");
 
-  if (loading) {
+  // If user is already authenticated, skip to dashboard
+  useEffect(() => {
+    if (!loading && user && view === "splash") {
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      if (name) setUserName(name);
+      setView("dashboard");
+    }
+  }, [user, loading, view]);
+
+  // After auth completes (from auth-prompt), save profile and go to dashboard
+  useEffect(() => {
+    if (user && view === "auth-prompt") {
+      // Save onboarding data to profile
+      const saveProfile = async () => {
+        if (onboardingData) {
+          await supabase.from("profiles").update({
+            display_name: userName,
+            position: onboardingData.position,
+            objective: onboardingData.objective,
+          }).eq("user_id", user.id);
+        }
+      };
+      saveProfile();
+      setView("dashboard");
+      setShowPaywall(true);
+    }
+  }, [user, view, onboardingData, userName]);
+
+  if (loading && view === "splash") {
     return (
       <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -26,11 +58,14 @@ const Index = () => {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  const handleSplashLogin = () => {
+    navigate("/auth");
+  };
 
-  const handleOnboardingComplete = (name: string) => {
+  const handleOnboardingComplete = (name: string, position: string, objective: string) => {
     setUserName(name);
-    setView("dashboard");
+    setOnboardingData({ position, objective });
+    setView("camera");
   };
 
   const handleAnalyze = () => {
@@ -38,12 +73,23 @@ const Index = () => {
   };
 
   const handleCameraComplete = () => {
-    setView("dashboard");
-    setShowPaywall(true);
+    setHasCompletedTest(true);
+    if (user) {
+      // Already authenticated, go to dashboard
+      setView("dashboard");
+      setShowPaywall(true);
+    } else {
+      // Not authenticated yet → show auth prompt
+      setView("auth-prompt");
+    }
   };
 
   const handleCameraClose = () => {
-    setView("dashboard");
+    if (user) {
+      setView("dashboard");
+    } else {
+      setView("splash");
+    }
   };
 
   const handleRegistered = () => {
@@ -56,33 +102,37 @@ const Index = () => {
     setActiveTab("studio");
   };
 
-  const displayName = userName || user.user_metadata?.full_name || user.user_metadata?.name || "Joueur";
+  const displayName = userName || user?.user_metadata?.full_name || user?.user_metadata?.name || "Joueur";
 
   return (
     <div className="min-h-dvh bg-black flex justify-center">
       <div className="w-full max-w-[430px] relative">
         {view === "splash" && (
-          <SplashScreen onStart={() => setView("onboarding")} />
+          <SplashScreen onStart={() => setView("onboarding")} onLogin={handleSplashLogin} />
         )}
 
         {view === "onboarding" && (
           <Onboarding onComplete={handleOnboardingComplete} />
         )}
 
-        {view === "dashboard" && (
-          <Dashboard
-            userName={displayName}
-            hasCompletedTest={isRegistered}
-            onAnalyze={handleAnalyze}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-        )}
-
         {view === "camera" && (
           <CameraView
             onComplete={handleCameraComplete}
             onClose={handleCameraClose}
+          />
+        )}
+
+        {view === "auth-prompt" && (
+          <AuthPrompt userName={userName} />
+        )}
+
+        {view === "dashboard" && (
+          <Dashboard
+            userName={displayName}
+            hasCompletedTest={hasCompletedTest || isRegistered}
+            onAnalyze={handleAnalyze}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
         )}
 

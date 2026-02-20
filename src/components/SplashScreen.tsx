@@ -2,9 +2,10 @@ import basketballBg from "@/assets/basketball-bg.jpg";
 
 interface SplashScreenProps {
   onStart: () => void;
+  onLogin?: () => void;
 }
 
-const SplashScreen = ({ onStart }: SplashScreenProps) => {
+const SplashScreen = ({ onStart, onLogin }: SplashScreenProps) => {
   return (
     <div className="mobile-container flex flex-col items-center justify-between bg-background relative overflow-hidden">
       {/* Background image */}
@@ -46,7 +47,7 @@ const SplashScreen = ({ onStart }: SplashScreenProps) => {
         </button>
         <p className="font-body text-sm text-muted-foreground">
           J'ai déjà un compte.{" "}
-          <span className="text-foreground underline cursor-pointer">Se connecter</span>
+          <span onClick={onLogin} className="text-foreground underline cursor-pointer">Se connecter</span>
         </p>
       </div>
     </div>

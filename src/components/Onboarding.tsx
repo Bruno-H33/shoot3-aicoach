@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, Check } from "lucide-react";
 
 interface OnboardingProps {
-  onComplete: (name: string) => void;
+  onComplete: (name: string, position: string, objective: string) => void;
 }
 
 const postes = [
@@ -35,7 +35,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         setProgress(p);
         if (p >= 100) {
           clearInterval(interval);
-          setTimeout(() => onComplete(name.trim()), 300);
+          setTimeout(() => onComplete(name.trim(), selectedPoste || "", selectedObjectif || ""), 300);
         }
       }, 40);
     } else {
