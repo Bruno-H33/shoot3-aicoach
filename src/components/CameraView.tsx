@@ -8,7 +8,7 @@ interface CameraViewProps {
 
 type Phase = "idle" | "countdown" | "recording" | "processing";
 
-const COUNTDOWN = 5;
+const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
 
 const terminalLines = [
@@ -52,32 +52,42 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, [facingMode]);
 
-  // Voice synthesis helper — no cancel() to avoid startup delay
-  const speak = (text: string) => {
+  // Voice synthesis helper — chains speech via onend to avoid any delay
+  const speak = (text: string, onEnd?: () => void) => {
     if (!("speechSynthesis" in window)) return;
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "fr-FR";
     utter.rate = 0.95;
     utter.pitch = 1.1;
     utter.volume = 1;
+    if (onEnd) utter.onend = onEnd;
     window.speechSynthesis.speak(utter);
   };
 
-  // Countdown logic
+  // Countdown logic — driven by onend callbacks, not timers, to stay in sync
   useEffect(() => {
     if (phase !== "countdown") return;
-    if (countdown <= 0) {
-      // Cancel previous (the last number) then say go
+
+    const runCountdown = (n: number) => {
+      if (n <= 0) {
+        speak("C'est parti !", () => {
+          setPhase("recording");
+          setTimeLeft(RECORDING_TIME);
+        });
+        setCountdown(0);
+        return;
+      }
+      setCountdown(n);
+      speak(String(n), () => runCountdown(n - 1));
+    };
+
+    // "Mise en place !" is already spoken on tap; start numerical countdown immediately
+    runCountdown(COUNTDOWN);
+
+    return () => {
       window.speechSynthesis.cancel();
-      speak("C'est parti !");
-      setPhase("recording");
-      setTimeLeft(RECORDING_TIME);
-      return;
-    }
-    speak(String(countdown));
-    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [phase, countdown]);
+    };
+  }, [phase]);
 
   // Recording logic
   useEffect(() => {
@@ -114,9 +124,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
   const handleRecord = () => {
     if (phase === "idle") {
-      // Speak immediately on tap — before any state update to avoid delay
+      // "Mise en place !" fires immediately on tap, before any React state update
       speak("Mise en place !");
-      setCountdown(COUNTDOWN);
       setPhase("countdown");
       setShowFeedback(false);
     }
