@@ -433,10 +433,10 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
             </div>
 
             {/* Offer 1 — PDF Report 9.99€ */}
-            <div className="rounded-2xl p-5 border border-white/10" style={{ background: "rgba(14,10,8,0.9)" }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+            <div className="rounded-2xl p-5 border border-white/10" style={{ background: "rgba(14,10,8,0.95)" }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/60">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -445,27 +445,31 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-sport text-xl text-foreground tracking-wider">ANALYSE PDF DÉTAILLÉE</h4>
-                  <span className="font-body text-xs text-muted-foreground">Accès immédiat · PDF envoyé par email</span>
+                  <h4 className="font-sport text-xl text-foreground tracking-wider">RAPPORT D'ANALYSE (PDF)</h4>
+                  <span className="font-body text-xs text-muted-foreground">Accès immédiat · Ton plan d'action d'urgence</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
-                {["Diagnostic des points bloquants", "Images frame-by-frame de ton tir", "Plan d'entraînement immédiat (3 exercices)"].map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-primary/70 flex-shrink-0" />
+                {[
+                  "Décryptage visuel de tes erreurs (frame-by-frame)",
+                  "Analyse chiffrée de ta biomécanique (angles, appuis)",
+                  "Routine express : 3 exercices ciblés pour corriger",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary/70 flex-shrink-0 mt-1.5" />
                     <span className="font-body text-xs text-foreground/70">{f}</span>
                   </li>
                 ))}
               </ul>
-              <button onClick={handleOfferClick} className="w-full border border-white/20 text-foreground font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-white/40">
-                DÉBLOQUER · 9.99€
+              <button onClick={handleOfferClick} className="w-full border border-white/20 text-foreground font-sport text-sm tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-white/40 hover:bg-white/5">
+                DÉBLOQUER MON RAPPORT · 9.99€
               </button>
             </div>
 
             {/* Offer 2 — Sniper Elite 49.99€ */}
-            <div className="rounded-2xl p-5 relative overflow-hidden neon-border" style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.98), rgba(45,18,4,0.95))" }}>
+            <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.98), rgba(45,18,4,0.95))", boxShadow: "0 0 0 1.5px hsl(var(--primary) / 0.6), 0 0 24px hsl(var(--primary) / 0.18), 0 0 48px hsl(var(--primary) / 0.08)" }}>
               <div className="absolute top-4 right-4">
-                <span className="font-body text-[9px] font-bold tracking-widest bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase">Recommandé</span>
+                <span className="font-body text-[9px] font-bold tracking-widest bg-primary text-primary-foreground px-2.5 py-1 rounded-full uppercase">RECOMMANDÉ</span>
               </div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 glow-orange" style={{ background: "hsl(var(--primary))" }}>
@@ -477,19 +481,24 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 </div>
                 <div>
                   <h4 className="font-sport text-xl text-foreground tracking-wider">PROGRAMME SNIPER ELITE</h4>
-                  <span className="font-body text-xs text-primary/80">30 Jours · Transformation Complète</span>
+                  <span className="font-body text-xs text-primary/80">30 Jours · Bootcamp sur-mesure</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
-                {["Évolution adaptative IA", "Suivi quotidien", "Exercices neuro-cognitifs", "Correction biomécanique ciblée"].map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0" />
+                {[
+                  "Plan d'entraînement IA sur 30 jours",
+                  "Check-up biomécanique hebdomadaire",
+                  "Exercices neuro-cognitifs (vitesse & focus)",
+                  "Ajustement de la difficulté selon tes progrès",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0 mt-1.5" />
                     <span className="font-body text-xs text-foreground/80">{f}</span>
                   </li>
                 ))}
               </ul>
-              <button onClick={handleOfferClick} className="btn-primary w-full text-base">
-                DÉMARRER LE PROGRAMME · 49.99€
+              <button onClick={handleOfferClick} className="btn-primary w-full text-base py-3">
+                DÉMARRER LE BOOTCAMP · 49.99€
               </button>
             </div>
 
