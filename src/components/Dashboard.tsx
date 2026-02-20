@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Bell, Lock, Play, Dumbbell, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+
+const PRICES = {
+  rapport: "price_1T32lwEznnJeH6em5ubXNs97",
+  sniper: "price_1T32mdEznnJeH6emF220BgJo",
+  team: "price_1T32n7EznnJeH6em2gAvo86i",
+};
 
 interface DashboardProps {
   userName: string;
@@ -15,11 +22,27 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
 
-  const handleOfferClick = () => {
-    toast({
-      title: "Redirection Stripe",
-      description: "Redirection vers la page de paiement Stripe... (Simulation)",
-    });
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+
+  const handleOfferClick = async (priceId: string) => {
+    setCheckoutLoading(priceId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message || "Impossible de créer la session de paiement",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(null);
+    }
   };
 
   const handleMetricClick = () => {
@@ -461,7 +484,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </li>
                 ))}
               </ul>
-              <button onClick={handleOfferClick} className="w-full border border-white/20 text-foreground font-sport text-sm tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-white/40 hover:bg-white/5">
+              <button onClick={() => handleOfferClick(PRICES.rapport)} disabled={checkoutLoading === PRICES.rapport} className="w-full border border-white/20 text-foreground font-sport text-sm tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-white/40 hover:bg-white/5 disabled:opacity-50">
                 DÉBLOQUER MON RAPPORT · 9.99€
               </button>
             </div>
@@ -497,7 +520,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </li>
                 ))}
               </ul>
-              <button onClick={handleOfferClick} className="btn-primary w-full text-base py-3">
+              <button onClick={() => handleOfferClick(PRICES.sniper)} disabled={checkoutLoading === PRICES.sniper} className="btn-primary w-full text-base py-3 disabled:opacity-50">
                 DÉMARRER LE BOOTCAMP · 49.99€
               </button>
             </div>
@@ -526,7 +549,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </li>
                 ))}
               </ul>
-              <button onClick={handleOfferClick} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20">
+              <button onClick={() => handleOfferClick(PRICES.team)} disabled={checkoutLoading === PRICES.team} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20 disabled:opacity-50">
                 REJOINDRE LA LIGUE · 14.99€/MOIS
               </button>
             </div>
