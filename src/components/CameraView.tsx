@@ -11,6 +11,71 @@ type Phase = "idle" | "countdown" | "recording" | "processing";
 const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
 
+const apiKey = "AIzaSyBNTW9Najj6o0O7ldyUiP4rpBF8r6mfqpI";
+
+const pcmToWav = (pcmData: ArrayBuffer, sampleRate: number): Blob => {
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+  const writeString = (v: DataView, offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) v.setUint8(offset + i, string.charCodeAt(i));
+  };
+  writeString(view, 0, "RIFF");
+  view.setUint32(4, 36 + pcmData.byteLength, true);
+  writeString(view, 8, "WAVE");
+  writeString(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(view, 36, "data");
+  view.setUint32(40, pcmData.byteLength, true);
+  return new Blob([header, pcmData], { type: "audio/wav" });
+};
+
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binaryString = window.atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
+  return bytes.buffer;
+};
+
+const playGeminiVoice = async (text: string): Promise<void> => {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+  const payload = {
+    contents: [{ parts: [{ text }] }],
+    generationConfig: {
+      responseModalities: ["AUDIO"],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Fenrir" } } },
+    },
+  };
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+      const audioData = data.candidates[0].content.parts[0].inlineData.data;
+      const arrayBuffer = base64ToArrayBuffer(audioData);
+      const wavBlob = pcmToWav(arrayBuffer, 24000);
+      const audioUrl = URL.createObjectURL(wavBlob);
+      const audio = new Audio(audioUrl);
+      return new Promise((resolve) => {
+        audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(); };
+        audio.onerror = () => resolve();
+        audio.play();
+      });
+    }
+  } catch (e) {
+    console.error("Gemini TTS Error", e);
+  }
+};
+
 const terminalLines = [
   "IMPORTATION DES FRAMES...",
   "DÉCOUPE TEMPORELLE EN COURS...",
@@ -52,41 +117,25 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, [facingMode]);
 
-  // Voice synthesis helper — chains speech via onend to avoid any delay
-  const speak = (text: string, onEnd?: () => void) => {
-    if (!("speechSynthesis" in window)) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "fr-FR";
-    utter.rate = 0.95;
-    utter.pitch = 1.1;
-    utter.volume = 1;
-    if (onEnd) utter.onend = onEnd;
-    window.speechSynthesis.speak(utter);
-  };
-
-  // Countdown logic — driven by onend callbacks, not timers, to stay in sync
+  // Countdown logic — timer-driven, Gemini TTS fires once at the end
   useEffect(() => {
     if (phase !== "countdown") return;
 
-    const runCountdown = (n: number) => {
+    const runCountdown = async (n: number) => {
       if (n <= 0) {
-        speak("C'est parti !", () => {
-          setPhase("recording");
-          setTimeLeft(RECORDING_TIME);
-        });
         setCountdown(0);
+        await playGeminiVoice("C'est parti !");
+        setPhase("recording");
+        setTimeLeft(RECORDING_TIME);
         return;
       }
       setCountdown(n);
-      speak(String(n), () => runCountdown(n - 1));
+      // Short visual delay between numbers, no TTS for each digit
+      await new Promise((res) => setTimeout(res, 950));
+      runCountdown(n - 1);
     };
 
-    // "Mise en place !" is already spoken on tap; start numerical countdown immediately
     runCountdown(COUNTDOWN);
-
-    return () => {
-      window.speechSynthesis.cancel();
-    };
   }, [phase]);
 
   // Recording logic
@@ -94,10 +143,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     if (phase !== "recording") return;
     if (timeLeft === 15) {
       setShowFeedback(true);
-      speak("Ton coude part un peu trop à l'extérieur !");
+      playGeminiVoice("Attention ! Ton coude s'ouvre trop vers l'extérieur.");
     }
     if (timeLeft <= 0) {
-      speak("Analyse terminée. Traitement en cours.");
+      playGeminiVoice("Terminé, analyse en cours.");
       setPhase("processing");
       setTerminalProgress(0);
       return;
@@ -124,12 +173,11 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
   const handleRecord = () => {
     if (phase === "idle") {
-      // "Mise en place !" fires immediately on tap, before any React state update
-      speak("Mise en place !");
       setPhase("countdown");
       setShowFeedback(false);
     }
   };
+
 
   const handleFlipCamera = () => {
     setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
