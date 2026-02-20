@@ -76,7 +76,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
               </span>
               <h3 className="font-sport text-4xl text-foreground mb-2">ANALYSER MON TIR</h3>
               <p className="font-body text-sm text-muted-foreground leading-relaxed">
-                Fais un test de 30s pour obtenir ton premier rapport biomécanique gratuit.
+                Fais un test de 30s pour obtenir ton diagnostic IA gratuit.
               </p>
             </div>
 
