@@ -27,14 +27,36 @@ const Index = () => {
     if (!loading && user && view === "splash") {
       const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
       if (name) setUserName(name);
-      setView("dashboard");
+      
+      // Check if user was in the middle of the onboarding flow (pre-auth)
+      const pendingFlow = sessionStorage.getItem("s3_pending_auth_flow");
+      if (pendingFlow) {
+        sessionStorage.removeItem("s3_pending_auth_flow");
+        const pending = JSON.parse(pendingFlow);
+        if (pending.userName) setUserName(pending.userName);
+        if (pending.onboardingData) setOnboardingData(pending.onboardingData);
+        setHasCompletedTest(true);
+        setView("dashboard");
+        setShowPaywall(true);
+        
+        // Save profile data
+        if (pending.onboardingData) {
+          supabase.from("profiles").update({
+            display_name: pending.userName || name,
+            position: pending.onboardingData.position,
+            objective: pending.onboardingData.objective,
+          }).eq("user_id", user.id);
+        }
+      } else {
+        setView("dashboard");
+      }
     }
   }, [user, loading, view]);
 
-  // After auth completes (from auth-prompt), save profile and go to dashboard
+  // After auth completes (from auth-prompt without page reload), save profile and go to dashboard
   useEffect(() => {
     if (user && view === "auth-prompt") {
-      // Save onboarding data to profile
+      sessionStorage.removeItem("s3_pending_auth_flow");
       const saveProfile = async () => {
         if (onboardingData) {
           await supabase.from("profiles").update({
@@ -45,6 +67,7 @@ const Index = () => {
         }
       };
       saveProfile();
+      setHasCompletedTest(true);
       setView("dashboard");
       setShowPaywall(true);
     }
@@ -75,11 +98,14 @@ const Index = () => {
   const handleCameraComplete = () => {
     setHasCompletedTest(true);
     if (user) {
-      // Already authenticated, go to dashboard
       setView("dashboard");
       setShowPaywall(true);
     } else {
-      // Not authenticated yet → show auth prompt
+      // Save flow state before OAuth redirect (page will reload)
+      sessionStorage.setItem("s3_pending_auth_flow", JSON.stringify({
+        userName,
+        onboardingData,
+      }));
       setView("auth-prompt");
     }
   };
