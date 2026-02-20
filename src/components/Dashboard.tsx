@@ -1,4 +1,5 @@
 import { Bell, Lock, Play, TrendingUp, Dumbbell, User } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface DashboardProps {
   userName: string;
@@ -9,6 +10,13 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardProps) => {
+  const handleOfferClick = () => {
+    toast({
+      title: "Redirection Stripe",
+      description: "Redirection vers la page de paiement Stripe... (Simulation)",
+    });
+  };
+
   return (
     <div className="mobile-container flex flex-col bg-background relative">
       <div className="flex-1 overflow-y-auto pb-28">
@@ -142,17 +150,145 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
         )}
 
         {activeTab === "pro" && (
-          <div className="flex flex-col items-center justify-center h-96 px-8 text-center animate-fade-in-up">
-            <User className="w-16 h-16 text-muted-foreground/40 mb-6" />
-            <h2 className="font-sport text-4xl text-foreground">
-              PROFIL <span className="text-primary">PRO</span>
-            </h2>
-            <p className="font-body text-sm text-muted-foreground mt-4 mb-8 leading-relaxed">
-              Débloque le suivi IA avancé, les rapports PDF et le coaching personnalisé.
-            </p>
-            <button onClick={onAnalyze} className="btn-primary">
-              COMMENCER L'ÉVALUATION
-            </button>
+          <div className="px-5 pb-4 space-y-4 animate-fade-in-up">
+            {/* User Profile Header */}
+            <div className="flex items-center gap-4 py-2">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(18 80% 30%), hsl(18 100% 45%))" }}
+              >
+                <span className="font-sport text-2xl text-foreground">{userName.charAt(0).toUpperCase()}</span>
+              </div>
+              <div>
+                <h2 className="font-sport text-2xl text-foreground tracking-wider">{userName.toUpperCase()}</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="font-body text-xs text-muted-foreground tracking-widest uppercase">Profil Actif · Niveau Débutant</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-white/8" />
+
+            {/* Section label */}
+            <div>
+              <p className="font-body text-xs text-muted-foreground tracking-widest uppercase mb-1">Boutique</p>
+              <h3 className="font-sport text-3xl text-foreground">PASSE AU <span className="text-primary">NIVEAU SUP</span></h3>
+            </div>
+
+            {/* Offer 1 — PDF Report 9.99€ */}
+            <div
+              className="rounded-2xl p-5 border border-white/10"
+              style={{ background: "rgba(14,10,8,0.9)" }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-sport text-xl text-foreground tracking-wider">ANALYSE PDF DÉTAILLÉE</h4>
+                  <span className="font-body text-xs text-muted-foreground">Accès immédiat · PDF envoyé par email</span>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-5">
+                {["Diagnostic des points bloquants", "Images frame-by-frame de ton tir", "Plan d'entraînement immédiat (3 exercices)"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary/70 flex-shrink-0" />
+                    <span className="font-body text-xs text-foreground/70">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleOfferClick()}
+                className="w-full border border-white/20 text-foreground font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-white/40"
+              >
+                DÉBLOQUER · 9.99€
+              </button>
+            </div>
+
+            {/* Offer 2 — Sniper Elite 49.99€ (Hero) */}
+            <div
+              className="rounded-2xl p-5 relative overflow-hidden neon-border"
+              style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.98), rgba(45,18,4,0.95))" }}
+            >
+              {/* Recommandé badge */}
+              <div className="absolute top-4 right-4">
+                <span className="font-body text-[9px] font-bold tracking-widest bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase">Recommandé</span>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 glow-orange" style={{ background: "hsl(var(--primary))" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <line x1="12" y1="2" x2="12" y2="5"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                    <line x1="2" y1="12" x2="5" y2="12"/>
+                    <line x1="19" y1="12" x2="22" y2="12"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-sport text-xl text-foreground tracking-wider">PROGRAMME SNIPER ELITE</h4>
+                  <span className="font-body text-xs text-primary/80">30 Jours · Transformation Complète</span>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-5">
+                {["Évolution adaptative IA", "Suivi quotidien", "Exercices neuro-cognitifs", "Correction biomécanique illimitée"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0" />
+                    <span className="font-body text-xs text-foreground/80">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleOfferClick()}
+                className="btn-primary w-full text-base"
+              >
+                DÉMARRER LE PROGRAMME · 49.99€
+              </button>
+            </div>
+
+            {/* Offer 3 — Team Subscription 14.99€/mois */}
+            <div
+              className="rounded-2xl p-5 border border-blue-500/20"
+              style={{ background: "rgba(8,10,18,0.95)" }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-sport text-xl text-foreground tracking-wider">PASS TEAM SHOOT3</h4>
+                  <span className="font-body text-xs text-blue-400/80">Abonnement mensuel · Sans engagement</span>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-5">
+                {["Accès à la communauté privée", "Lives mensuels avec joueurs Pros", "Création de sous-groupes & Défis", "CV Sportif Certifié (après 3 mois)"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
+                    <span className="font-body text-xs text-foreground/70">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleOfferClick()}
+                className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20"
+              >
+                REJOINDRE LA LIGUE · 14.99€/MOIS
+              </button>
+            </div>
+
+            <div className="pb-2" />
           </div>
         )}
       </div>
