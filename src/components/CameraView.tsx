@@ -11,7 +11,7 @@ type Phase = "idle" | "countdown" | "recording" | "processing";
 const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
 
-const apiKey = "AIzaSyBNTW9Najj6o0O7ldyUiP4rpBF8r6mfqpI";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 const pcmToWav = (pcmData: ArrayBuffer, sampleRate: number): Blob => {
   const header = new ArrayBuffer(44);
@@ -44,19 +44,11 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
 };
 
 const playGeminiVoice = async (text: string): Promise<void> => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-  const payload = {
-    contents: [{ parts: [{ text }] }],
-    generationConfig: {
-      responseModalities: ["AUDIO"],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Fenrir" } } },
-    },
-  };
   try {
-    const response = await fetch(url, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/gemini-tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ text }),
     });
     const data = await response.json();
     if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
