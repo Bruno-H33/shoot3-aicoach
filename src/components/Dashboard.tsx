@@ -238,7 +238,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
-                {["Évolution adaptative IA", "Suivi quotidien", "Exercices neuro-cognitifs", "Correction biomécanique illimitée"].map((f) => (
+                {["Évolution adaptative IA", "Suivi quotidien", "Exercices neuro-cognitifs", "Correction biomécanique ciblée"].map((f) => (
                   <li key={f} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0" />
                     <span className="font-body text-xs text-foreground/80">{f}</span>
@@ -273,7 +273,7 @@ const Dashboard = ({ userName, onAnalyze, activeTab, onTabChange }: DashboardPro
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
-                {["Accès à la communauté privée", "Lives mensuels avec joueurs Pros", "Création de sous-groupes & Défis", "CV Sportif Certifié (après 3 mois)"].map((f) => (
+                {["Accès à la communauté privée", "Lives mensuels avec invités Pros", "Participations aux Défis et Events", "CV Sportif Certifié (après 3 mois)"].map((f) => (
                   <li key={f} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
                     <span className="font-body text-xs text-foreground/70">{f}</span>
