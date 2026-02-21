@@ -12,6 +12,7 @@ interface ShotIssue {
   key: string;
   label: string;
   severity: "low" | "medium" | "high";
+  confidence?: number;
   feedback_fr: string;
 }
 
