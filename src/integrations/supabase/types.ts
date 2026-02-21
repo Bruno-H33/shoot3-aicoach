@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           detailed_report: Json | null
+          frames_urls: string[] | null
           id: string
           issues: Json
           overall_score: number
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           created_at?: string
           detailed_report?: Json | null
+          frames_urls?: string[] | null
           id?: string
           issues?: Json
           overall_score?: number
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           created_at?: string
           detailed_report?: Json | null
+          frames_urls?: string[] | null
           id?: string
           issues?: Json
           overall_score?: number

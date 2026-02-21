@@ -15,6 +15,7 @@ type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "
 interface AnalysisResult {
   issues: Array<{ key: string; label: string; severity: string; feedback_fr: string }>;
   score: number;
+  frames?: string[];
 }
 
 const Index = () => {
@@ -64,7 +65,7 @@ const Index = () => {
         
         // Save analysis to DB and show paywall
         if (pending.analysisResult) {
-          saveAnalysis(pending.analysisResult, user.id).then((id) => {
+          saveAnalysis(pending.analysisResult, user.id, pending.analysisResult?.frames).then((id) => {
             if (id) setCurrentAnalysisId(id);
           });
         }
@@ -99,7 +100,7 @@ const Index = () => {
 
       // Save analysis to DB
       if (analysisResult) {
-        saveAnalysis(analysisResult, user.id).then((id) => {
+        saveAnalysis(analysisResult, user.id, analysisResult?.frames).then((id) => {
           if (id) setCurrentAnalysisId(id);
         });
       }
@@ -110,7 +111,28 @@ const Index = () => {
     }
   }, [user, view, onboardingData, userName]);
 
-  const saveAnalysis = async (result: AnalysisResult, userId: string): Promise<string | null> => {
+  const uploadFrames = async (frames: string[], userId: string, analysisId: string): Promise<string[]> => {
+    const urls: string[] = [];
+    for (let i = 0; i < frames.length; i++) {
+      try {
+        const base64 = frames[i].split(",")[1];
+        const byteString = atob(base64);
+        const ab = new Uint8Array(byteString.length);
+        for (let j = 0; j < byteString.length; j++) ab[j] = byteString.charCodeAt(j);
+        const blob = new Blob([ab], { type: "image/jpeg" });
+        const path = `${userId}/${analysisId}/frame_${i}.jpg`;
+        const { error: upErr } = await supabase.storage.from("analysis-frames").upload(path, blob);
+        if (upErr) { console.error("Upload frame error:", upErr); continue; }
+        const { data: urlData } = supabase.storage.from("analysis-frames").getPublicUrl(path);
+        if (urlData?.publicUrl) urls.push(urlData.publicUrl);
+      } catch (e) {
+        console.error("Frame upload error:", e);
+      }
+    }
+    return urls;
+  };
+
+  const saveAnalysis = async (result: AnalysisResult, userId: string, frames?: string[]): Promise<string | null> => {
     try {
       const { data, error } = await supabase
         .from("analyses")
@@ -123,7 +145,16 @@ const Index = () => {
         .single();
       if (error) { console.error("Save analysis error:", error); return null; }
       const id = data?.id || null;
-      if (id) sessionStorage.setItem("s3_last_analysis_id", id);
+      if (id) {
+        sessionStorage.setItem("s3_last_analysis_id", id);
+        // Upload frames and save URLs
+        if (frames && frames.length > 0) {
+          const frameUrls = await uploadFrames(frames, userId, id);
+          if (frameUrls.length > 0) {
+            await supabase.from("analyses").update({ frames_urls: frameUrls }).eq("id", id);
+          }
+        }
+      }
       return id;
     } catch (e) {
       console.error("Save analysis error:", e);
@@ -153,16 +184,17 @@ const Index = () => {
     setView("camera");
   };
 
-  const handleCameraComplete = (issues?: Array<{ key: string; label: string; severity: string; feedback_fr: string }>) => {
+  const handleCameraComplete = (issues?: Array<{ key: string; label: string; severity: string; feedback_fr: string }>, frames?: string[]) => {
     setHasCompletedTest(true);
     const result: AnalysisResult = {
       issues: issues || [],
       score: issues && issues.length > 0 ? Math.max(40, 100 - issues.length * 12) : 85,
+      frames,
     };
     setAnalysisResult(result);
     
     if (user) {
-      saveAnalysis(result, user.id).then((id) => {
+      saveAnalysis(result, user.id, frames).then((id) => {
         if (id) setCurrentAnalysisId(id);
       });
       setView("dashboard");
