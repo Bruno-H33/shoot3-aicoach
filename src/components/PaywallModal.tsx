@@ -35,7 +35,7 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
       });
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
       }
     } catch (err: any) {
       toast.error(err.message || "Erreur de paiement");
