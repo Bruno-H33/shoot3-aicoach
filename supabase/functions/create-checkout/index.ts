@@ -13,27 +13,37 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Missing authorization header");
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !data.user?.email) {
+      throw new Error("User not authenticated");
+    }
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated");
 
     const { priceId } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
+    let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
@@ -42,13 +52,15 @@ serve(async (req) => {
     const price = await stripe.prices.retrieve(priceId);
     const mode = price.recurring ? "subscription" : "payment";
 
+    const origin = req.headers.get("origin") || "https://id-preview--b15b6c8e-c9a2-434a-b895-d12461a3900e.lovable.app";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode,
-      success_url: `${req.headers.get("origin")}/?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/?payment=canceled`,
+      success_url: `${origin}/?payment=success`,
+      cancel_url: `${origin}/?payment=canceled`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
@@ -56,6 +68,7 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
+    console.error("[CREATE-CHECKOUT] Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
