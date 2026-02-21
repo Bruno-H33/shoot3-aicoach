@@ -53,6 +53,7 @@ const Index = () => {
 
   // Handle payment success redirect
   useEffect(() => {
+    if (loading) return; // Wait for auth to finish loading
     const payment = searchParams.get("payment");
     const savedAnalysisId = sessionStorage.getItem("s3_last_analysis_id");
     if (payment === "success" && savedAnalysisId && user) {
@@ -63,7 +64,7 @@ const Index = () => {
     } else if (payment) {
       setSearchParams({});
     }
-  }, [searchParams, user]);
+  }, [searchParams, user, loading]);
 
   // If user is already authenticated, skip to dashboard
   useEffect(() => {
