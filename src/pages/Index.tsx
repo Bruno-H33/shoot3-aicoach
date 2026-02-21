@@ -11,6 +11,11 @@ import AuthPrompt from "@/components/AuthPrompt";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard";
 
+interface AnalysisResult {
+  issues: Array<{ key: string; label: string; severity: string; feedback_fr: string }>;
+  score: number;
+}
+
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -21,6 +26,7 @@ const Index = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeTab, setActiveTab] = useState("studio");
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
   // If user is already authenticated, skip to dashboard
   useEffect(() => {
@@ -35,6 +41,7 @@ const Index = () => {
         const pending = JSON.parse(pendingFlow);
         if (pending.userName) setUserName(pending.userName);
         if (pending.onboardingData) setOnboardingData(pending.onboardingData);
+        if (pending.analysisResult) setAnalysisResult(pending.analysisResult);
         setHasCompletedTest(true);
         setView("dashboard");
         setShowPaywall(true);
@@ -95,8 +102,14 @@ const Index = () => {
     setView("camera");
   };
 
-  const handleCameraComplete = () => {
+  const handleCameraComplete = (issues?: Array<{ key: string; label: string; severity: string; feedback_fr: string }>) => {
     setHasCompletedTest(true);
+    const result: AnalysisResult = {
+      issues: issues || [],
+      score: issues && issues.length > 0 ? Math.max(40, 100 - issues.length * 12) : 85,
+    };
+    setAnalysisResult(result);
+    
     if (user) {
       setView("dashboard");
       setShowPaywall(true);
@@ -105,6 +118,7 @@ const Index = () => {
       sessionStorage.setItem("s3_pending_auth_flow", JSON.stringify({
         userName,
         onboardingData,
+        analysisResult: result,
       }));
       setView("auth-prompt");
     }
@@ -168,6 +182,7 @@ const Index = () => {
             onClose={handlePaywallClose}
             onRegistered={handleRegistered}
             isRegistered={isRegistered}
+            analysisResult={analysisResult}
           />
         )}
       </div>

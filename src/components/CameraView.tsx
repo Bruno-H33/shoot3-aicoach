@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { X, SwitchCamera, Play, Square } from "lucide-react";
 
 interface CameraViewProps {
-  onComplete: () => void;
+  onComplete: (issues?: ShotIssue[]) => void;
   onClose: () => void;
 }
 
@@ -246,7 +246,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       setTerminalProgress((p) => {
         if (p >= terminalLines.length) {
           clearInterval(interval);
-          setTimeout(onComplete, 500);
+          setTimeout(() => onComplete(liveIssues.length > 0 ? liveIssues : undefined), 500);
           return p;
         }
         return p + 1;

@@ -3,20 +3,24 @@ import { Lock, Search, FileText, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface AnalysisResult {
+  issues: Array<{ key: string; label: string; severity: string; feedback_fr: string }>;
+  score: number;
+}
+
 interface PaywallModalProps {
   userName: string;
   onClose: () => void;
   onRegistered: () => void;
   isRegistered: boolean;
+  analysisResult?: AnalysisResult | null;
 }
 
 const RAPPORT_PRICE_ID = "price_1T32lwEznnJeH6em5ubXNs97";
 
-const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: PaywallModalProps) => {
+const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisResult }: PaywallModalProps) => {
   const [buyLoading, setBuyLoading] = useState(false);
 
-  // User is already authenticated at this point, so we show the results directly
-  // and call onRegistered to mark test as completed
   useState(() => {
     if (!isRegistered) {
       onRegistered();
@@ -39,6 +43,10 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: Paywall
       setBuyLoading(false);
     }
   };
+
+  const issueCount = analysisResult?.issues?.length || 0;
+  const topIssue = analysisResult?.issues?.[0];
+  const score = analysisResult?.score ?? 65;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -64,23 +72,50 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered }: Paywall
             <div className="flex items-center justify-center gap-2 mt-2">
               <Search className="w-4 h-4 text-primary" />
               <span className="font-body text-sm text-primary font-bold tracking-widest uppercase">
-                2 Erreurs Majeures Détectées
+                {issueCount > 0 ? `${issueCount} Erreur${issueCount > 1 ? "s" : ""} Détectée${issueCount > 1 ? "s" : ""}` : "Analyse Complète"}
               </span>
             </div>
           </div>
 
-          {/* Revealed diagnosis */}
+          {/* Dynamic diagnosis */}
           <div
             className="rounded-2xl p-5"
             style={{ background: "rgba(20, 30, 50, 0.8)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
-            <p className="font-body text-base text-foreground leading-relaxed">
-              "{userName}, ton <span className="text-primary font-bold">Coude</span> s'ouvre trop vers l'extérieur (112°). Ta cible idéale est 90°. Cela désaxe ta trajectoire vers la gauche."
-            </p>
+            {topIssue ? (
+              <p className="font-body text-base text-foreground leading-relaxed">
+                "{userName}, {topIssue.feedback_fr}"
+              </p>
+            ) : (
+              <p className="font-body text-base text-foreground leading-relaxed">
+                "{userName}, ton analyse IA est prête. Découvre ton rapport complet avec les axes d'amélioration personnalisés."
+              </p>
+            )}
             <div className="border-t border-white/10 mt-4 pt-4">
-              <p className="font-body text-sm text-muted-foreground">Score de stabilité : <span className="text-foreground font-semibold">65/100</span></p>
+              <p className="font-body text-sm text-muted-foreground">
+                Score de stabilité : <span className="text-foreground font-semibold">{score}/100</span>
+              </p>
             </div>
           </div>
+
+          {/* Additional issues preview */}
+          {analysisResult && analysisResult.issues.length > 1 && (
+            <div className="space-y-2">
+              {analysisResult.issues.slice(1, 3).map((issue) => (
+                <div
+                  key={issue.key}
+                  className="rounded-xl p-3 flex items-center gap-3"
+                  style={{ background: "rgba(20, 30, 50, 0.5)", border: "1px solid rgba(255,255,255,0.05)" }}
+                >
+                  <Lock className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="font-body text-xs text-primary font-bold uppercase">{issue.label}</p>
+                    <p className="font-body text-xs text-muted-foreground">Détails dans le rapport complet</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Upsell */}
           <div
