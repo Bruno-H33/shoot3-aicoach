@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import PaywallModal from "@/components/PaywallModal";
 import AuthPrompt from "@/components/AuthPrompt";
 import ReportView from "@/components/ReportView";
 import AccessCodeGate from "@/components/AccessCodeGate";
+import NoCreditsModal from "@/components/NoCreditsModal";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
 
@@ -33,6 +34,22 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("studio");
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [showNoCredits, setShowNoCredits] = useState(false);
+
+  // Fetch user credits
+  const fetchCredits = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", userId)
+      .single();
+    if (data) setCredits(data.credits);
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchCredits(user.id);
+  }, [user, fetchCredits]);
 
   // Handle payment success redirect
   useEffect(() => {
@@ -183,10 +200,15 @@ const Index = () => {
   };
 
   const handleAnalyze = () => {
+    // Check credits for logged-in users
+    if (user && credits !== null && credits <= 0) {
+      setShowNoCredits(true);
+      return;
+    }
     setView("camera");
   };
 
-  const handleCameraComplete = (issues?: Array<{ key: string; label: string; severity: string; feedback_fr: string }>, frames?: string[]) => {
+  const handleCameraComplete = async (issues?: Array<{ key: string; label: string; severity: string; feedback_fr: string }>, frames?: string[]) => {
     setHasCompletedTest(true);
     const result: AnalysisResult = {
       issues: issues || [],
@@ -196,6 +218,20 @@ const Index = () => {
     setAnalysisResult(result);
     
     if (user) {
+      // Decrement credits
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("credits")
+        .eq("user_id", user.id)
+        .single();
+      if (profile && profile.credits > 0) {
+        await supabase
+          .from("profiles")
+          .update({ credits: profile.credits - 1 })
+          .eq("user_id", user.id);
+        setCredits(profile.credits - 1);
+      }
+
       saveAnalysis(result, user.id, frames).then((id) => {
         if (id) setCurrentAnalysisId(id);
       });
@@ -284,6 +320,10 @@ const Index = () => {
             isRegistered={isRegistered}
             analysisResult={analysisResult}
           />
+        )}
+
+        {showNoCredits && (
+          <NoCreditsModal onClose={() => setShowNoCredits(false)} />
         )}
         </>
         )}
