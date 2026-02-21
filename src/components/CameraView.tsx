@@ -18,7 +18,7 @@ interface ShotIssue {
 
 const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
-const ANALYSIS_INTERVAL = 5000; // analyse toutes les 5 secondes
+const ANALYSIS_INTERVAL = 3000; // analyse toutes les 3 secondes
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -170,7 +170,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       if (!frame) return;
 
       // Save key frames (max 5 evenly spaced)
-      if (keyFramesRef.current.length < 5) {
+      if (keyFramesRef.current.length < 10) {
         keyFramesRef.current.push(frame);
       }
 
