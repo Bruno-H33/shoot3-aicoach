@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_code_uses: {
+        Row: {
+          code_id: string
+          device_fingerprint: string | null
+          id: string
+          used_at: string
+        }
+        Insert: {
+          code_id: string
+          device_fingerprint?: string | null
+          id?: string
+          used_at?: string
+        }
+        Update: {
+          code_id?: string
+          device_fingerprint?: string | null
+          id?: string
+          used_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_code_uses_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+        }
+        Relationships: []
+      }
       analyses: {
         Row: {
           created_at: string

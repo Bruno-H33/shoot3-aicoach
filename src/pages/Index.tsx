@@ -9,6 +9,7 @@ import CameraView from "@/components/CameraView";
 import PaywallModal from "@/components/PaywallModal";
 import AuthPrompt from "@/components/AuthPrompt";
 import ReportView from "@/components/ReportView";
+import AccessCodeGate from "@/components/AccessCodeGate";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
 
@@ -23,6 +24,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<View>("splash");
+  const [accessGranted, setAccessGranted] = useState(() => sessionStorage.getItem("s3_access_granted") === "true");
   const [userName, setUserName] = useState("");
   const [onboardingData, setOnboardingData] = useState<{ position: string; objective: string } | null>(null);
   const [hasCompletedTest, setHasCompletedTest] = useState(false);
@@ -232,6 +234,10 @@ const Index = () => {
   return (
     <div className="min-h-dvh bg-black flex justify-center">
       <div className="w-full max-w-[430px] relative">
+        {!accessGranted && !user ? (
+          <AccessCodeGate onValidated={() => setAccessGranted(true)} />
+        ) : (
+        <>
         {view === "splash" && (
           <SplashScreen onStart={() => setView("onboarding")} onLogin={handleSplashLogin} />
         )}
@@ -278,6 +284,8 @@ const Index = () => {
             isRegistered={isRegistered}
             analysisResult={analysisResult}
           />
+        )}
+        </>
         )}
       </div>
     </div>
