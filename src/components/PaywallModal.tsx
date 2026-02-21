@@ -16,7 +16,7 @@ interface PaywallModalProps {
   analysisResult?: AnalysisResult | null;
 }
 
-const RAPPORT_PRICE_ID = "price_1T32lwEznnJeH6em5ubXNs97";
+const RAPPORT_PRICE_ID = "price_1T345HRKXHvnBBog0jfr2XdU";
 
 const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisResult }: PaywallModalProps) => {
   const [buyLoading, setBuyLoading] = useState(false);

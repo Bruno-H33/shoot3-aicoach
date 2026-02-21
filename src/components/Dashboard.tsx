@@ -6,9 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from "@/integrations/supabase/client";
 
 const PRICES = {
-  rapport: "price_1T32lwEznnJeH6em5ubXNs97",
-  sniper: "price_1T32mdEznnJeH6emF220BgJo",
-  team: "price_1T32n7EznnJeH6em2gAvo86i",
+  rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
+  sniper: "price_1T347IRKXHvnBBog16QQGxBo",
+  team: "price_1T346TRKXHvnBBognXYKppBj",
 };
 
 interface DashboardProps {
