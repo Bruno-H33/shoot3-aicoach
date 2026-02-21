@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Bell, Lock, Play, Dumbbell, User, LogOut } from "lucide-react";
+import { Bell, Lock, Play, Dumbbell, User, LogOut, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const PRICES = {
@@ -25,6 +26,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const { signOut } = useAuth();
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
@@ -578,6 +580,52 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               <LogOut className="w-4 h-4" />
               Se déconnecter
             </button>
+
+            {/* Suppression de compte */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="w-full flex items-center justify-center gap-2 rounded-2xl py-3 px-6 border border-destructive/30 font-body text-xs text-destructive/70 transition-all active:scale-95 hover:border-destructive hover:text-destructive">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Supprimer mon compte et mes données
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="max-w-[360px] rounded-2xl border border-destructive/30 bg-background">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-sport text-xl text-foreground">SUPPRIMER MON COMPTE</AlertDialogTitle>
+                  <AlertDialogDescription className="font-body text-sm text-muted-foreground leading-relaxed">
+                    Cette action est <strong className="text-destructive">irréversible</strong>. Toutes tes données seront définitivement supprimées : profil, analyses, frames vidéo, rapports.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="gap-2">
+                  <AlertDialogCancel className="font-body text-sm rounded-xl">Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={deletingAccount}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setDeletingAccount(true);
+                      try {
+                        const { error } = await supabase.functions.invoke("delete-account");
+                        if (error) throw error;
+                        toast({ title: "Compte supprimé", description: "Toutes tes données ont été effacées." });
+                        await signOut();
+                        window.location.href = "/";
+                      } catch (err: any) {
+                        toast({ title: "Erreur", description: err.message || "Impossible de supprimer le compte", variant: "destructive" });
+                        setDeletingAccount(false);
+                      }
+                    }}
+                    className="bg-destructive text-destructive-foreground font-sport text-xs tracking-widest rounded-xl hover:bg-destructive/90"
+                  >
+                    {deletingAccount ? "SUPPRESSION..." : "CONFIRMER LA SUPPRESSION"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Lien politique de confidentialité */}
+            <a href="/privacy" className="block text-center font-body text-xs text-muted-foreground underline hover:text-foreground transition-colors">
+              Politique de confidentialité
+            </a>
 
             <div className="pb-2" />
           </div>
