@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +12,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   if (loading) {
     return (
@@ -25,6 +27,11 @@ const Auth = () => {
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    if (!isLogin && !acceptedPrivacy) {
+      toast.error("Tu dois accepter la politique de confidentialité pour t'inscrire.");
+      setSubmitting(false);
+      return;
+    }
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -104,9 +111,29 @@ const Auth = () => {
             minLength={6}
             className="w-full rounded-2xl bg-card border border-border px-5 py-4 font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
+
+          {/* Privacy consent checkbox (signup only) */}
+          {!isLogin && (
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptedPrivacy}
+                onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-border accent-primary flex-shrink-0"
+              />
+              <span className="font-body text-xs text-muted-foreground leading-relaxed">
+                J'accepte la{" "}
+                <Link to="/privacy" className="text-primary underline" target="_blank">
+                  politique de confidentialité
+                </Link>{" "}
+                et le traitement de mes données personnelles conformément au RGPD.
+              </span>
+            </label>
+          )}
+
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (!isLogin && !acceptedPrivacy)}
             className="btn-primary disabled:opacity-50"
           >
             {submitting ? "..." : isLogin ? "SE CONNECTER" : "S'INSCRIRE"}
