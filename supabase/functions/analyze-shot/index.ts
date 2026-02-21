@@ -98,9 +98,10 @@ Tu es un coach direct et factuel. Tu t'adresses à des compétiteurs de 15-21 an
 
 RÈGLES :
 - Réponds UNIQUEMENT avec un JSON valide, sans markdown ni texte autour.
-- Format : { "issues": [{ "key": string, "label": string, "severity": "low"|"medium"|"high", "feedback_fr": string }], "overall_score": number }
-- "key" : identifiant court (ex: "chicken_wing", "thumb_flick", "hitch", "flat_arc", "stiff_legs", "no_follow_through", "lean_back", "unstable_base")
+- Format : { "issues": [{ "key": string, "label": string, "severity": "low"|"medium"|"high", "confidence": number, "feedback_fr": string }], "overall_score": number }
+- "key" : UNIQUEMENT parmi cette liste fermée : "chicken_wing", "thumb_flick", "hitch", "flat_arc", "stiff_legs", "no_follow_through", "lean_back", "unstable_base". AUCUNE AUTRE VALEUR N'EST ACCEPTÉE.
 - "label" : nom simple en français (ex: "Coude ouvert", "Main guide qui pousse")
+- "confidence" : nombre entre 0.0 et 1.0 indiquant ta certitude sur cette détection. 1.0 = tu es absolument sûr. 0.5 = possible mais pas certain.
 - "feedback_fr" : constat + correction, sec et direct (max 20 mots). Pas de compliment. Compréhensible par un joueur de 15 ans.
   Exemples :
   - "Coude ouvert. Tourne tes pieds, rentre le coude sous le ballon."
@@ -110,6 +111,12 @@ RÈGLES :
   - "Saccade dans la montée. Un seul mouvement, du bas vers le haut."
   - "Propre." (si le tir est bon — une seule phrase suffit)
 - "overall_score" : score global de 0 à 100
+
+RÈGLES ANTI-HALLUCINATION :
+- Si tu ne vois PAS CLAIREMENT un défaut, NE LE SIGNALE PAS. Il vaut mieux manquer un défaut que d'en inventer un.
+- Ne signale que ce que tu VOIS réellement sur les images. Pas de suppositions, pas d'inférences.
+- Si la qualité d'image est mauvaise ou l'angle ne te permet pas de voir un aspect du tir, ignore cet aspect.
+- Si tu n'es pas sûr à au moins 70%, ne le mets pas dans les issues.
 - Si le tir est propre, retourne "issues" vide et un score élevé (80+)
 - Maximum 3 corrections, les plus critiques d'abord
 - Si pas de tir ou de joueur visible : { "issues": [], "overall_score": -1 }`,
@@ -153,10 +160,24 @@ RÈGLES :
 
     // Parse the JSON from the AI response
     let analysis;
+    const VALID_KEYS = new Set([
+      "chicken_wing", "thumb_flick", "hitch", "flat_arc",
+      "stiff_legs", "no_follow_through", "lean_back", "unstable_base"
+    ]);
+    const CONFIDENCE_THRESHOLD = 0.7;
+
     try {
-      // Strip markdown code fences if present
       const cleaned = rawContent.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
       analysis = JSON.parse(cleaned);
+
+      // Filter: only keep issues with valid keys AND high confidence
+      if (Array.isArray(analysis.issues)) {
+        analysis.issues = analysis.issues.filter((issue: any) =>
+          VALID_KEYS.has(issue.key) &&
+          typeof issue.confidence === "number" &&
+          issue.confidence >= CONFIDENCE_THRESHOLD
+        );
+      }
     } catch {
       console.error("Failed to parse AI response:", rawContent);
       analysis = { issues: [], overall_score: -1 };
