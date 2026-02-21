@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       generationConfig: {
         responseModalities: ["AUDIO"],
         speechConfig: {
-          voiceConfig: { prebuiltVoiceConfig: { voiceName: "Fenrir" } },
+          voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } },
         },
       },
     };
