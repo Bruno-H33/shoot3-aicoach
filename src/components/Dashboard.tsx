@@ -17,9 +17,11 @@ interface DashboardProps {
   onAnalyze: () => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  analysisId?: string | null;
+  onViewReport?: (id: string) => void;
 }
 
-const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange }: DashboardProps) => {
+const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport }: DashboardProps) => {
   const { signOut } = useAuth();
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
@@ -307,13 +309,22 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                     </button>
                   </div>
 
-                  {/* Upsell nudge */}
-                  <button
-                    onClick={handleMetricClick}
-                    className="mt-4 w-full border border-primary/30 text-primary font-body text-xs tracking-widest py-2 rounded-xl transition-all active:scale-98 hover:bg-primary/10"
-                  >
-                    VOIR L'ANALYSE COMPLÈTE →
-                  </button>
+                  {/* Report CTA */}
+                  {analysisId && onViewReport ? (
+                    <button
+                      onClick={() => onViewReport(analysisId)}
+                      className="mt-4 w-full bg-primary text-primary-foreground font-sport text-xs tracking-widest py-2.5 rounded-xl transition-all active:scale-98"
+                    >
+                      VOIR MON RAPPORT COMPLET →
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleMetricClick}
+                      className="mt-4 w-full border border-primary/30 text-primary font-body text-xs tracking-widest py-2 rounded-xl transition-all active:scale-98 hover:bg-primary/10"
+                    >
+                      VOIR L'ANALYSE COMPLÈTE →
+                    </button>
+                  )}
                 </div>
               </div>
             )}

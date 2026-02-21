@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SplashScreen from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
@@ -8,8 +8,9 @@ import Dashboard from "@/components/Dashboard";
 import CameraView from "@/components/CameraView";
 import PaywallModal from "@/components/PaywallModal";
 import AuthPrompt from "@/components/AuthPrompt";
+import ReportView from "@/components/ReportView";
 
-type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard";
+type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
 
 interface AnalysisResult {
   issues: Array<{ key: string; label: string; severity: string; feedback_fr: string }>;
@@ -19,6 +20,7 @@ interface AnalysisResult {
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<View>("splash");
   const [userName, setUserName] = useState("");
   const [onboardingData, setOnboardingData] = useState<{ position: string; objective: string } | null>(null);
@@ -27,6 +29,21 @@ const Index = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeTab, setActiveTab] = useState("studio");
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+
+  // Handle payment success redirect
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const savedAnalysisId = sessionStorage.getItem("s3_last_analysis_id");
+    if (payment === "success" && savedAnalysisId && user) {
+      setCurrentAnalysisId(savedAnalysisId);
+      setView("report");
+      setSearchParams({});
+      sessionStorage.removeItem("s3_last_analysis_id");
+    } else if (payment) {
+      setSearchParams({});
+    }
+  }, [searchParams, user]);
 
   // If user is already authenticated, skip to dashboard
   useEffect(() => {
@@ -34,7 +51,6 @@ const Index = () => {
       const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
       if (name) setUserName(name);
       
-      // Check if user was in the middle of the onboarding flow (pre-auth)
       const pendingFlow = sessionStorage.getItem("s3_pending_auth_flow");
       if (pendingFlow) {
         sessionStorage.removeItem("s3_pending_auth_flow");
@@ -46,7 +62,13 @@ const Index = () => {
         setView("dashboard");
         setShowPaywall(true);
         
-        // Save profile data
+        // Save analysis to DB and show paywall
+        if (pending.analysisResult) {
+          saveAnalysis(pending.analysisResult, user.id).then((id) => {
+            if (id) setCurrentAnalysisId(id);
+          });
+        }
+
         if (pending.onboardingData) {
           supabase.from("profiles").update({
             display_name: pending.userName || name,
@@ -60,7 +82,7 @@ const Index = () => {
     }
   }, [user, loading, view]);
 
-  // After auth completes (from auth-prompt without page reload), save profile and go to dashboard
+  // After auth completes from auth-prompt
   useEffect(() => {
     if (user && view === "auth-prompt") {
       sessionStorage.removeItem("s3_pending_auth_flow");
@@ -74,11 +96,40 @@ const Index = () => {
         }
       };
       saveProfile();
+
+      // Save analysis to DB
+      if (analysisResult) {
+        saveAnalysis(analysisResult, user.id).then((id) => {
+          if (id) setCurrentAnalysisId(id);
+        });
+      }
+
       setHasCompletedTest(true);
       setView("dashboard");
       setShowPaywall(true);
     }
   }, [user, view, onboardingData, userName]);
+
+  const saveAnalysis = async (result: AnalysisResult, userId: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("analyses")
+        .insert({
+          user_id: userId,
+          issues: result.issues as any,
+          overall_score: result.score,
+        })
+        .select("id")
+        .single();
+      if (error) { console.error("Save analysis error:", error); return null; }
+      const id = data?.id || null;
+      if (id) sessionStorage.setItem("s3_last_analysis_id", id);
+      return id;
+    } catch (e) {
+      console.error("Save analysis error:", e);
+      return null;
+    }
+  };
 
   if (loading && view === "splash") {
     return (
@@ -111,10 +162,12 @@ const Index = () => {
     setAnalysisResult(result);
     
     if (user) {
+      saveAnalysis(result, user.id).then((id) => {
+        if (id) setCurrentAnalysisId(id);
+      });
       setView("dashboard");
       setShowPaywall(true);
     } else {
-      // Save flow state before OAuth redirect (page will reload)
       sessionStorage.setItem("s3_pending_auth_flow", JSON.stringify({
         userName,
         onboardingData,
@@ -173,6 +226,15 @@ const Index = () => {
             onAnalyze={handleAnalyze}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            analysisId={currentAnalysisId}
+            onViewReport={(id) => { setCurrentAnalysisId(id); setView("report"); }}
+          />
+        )}
+
+        {view === "report" && currentAnalysisId && (
+          <ReportView
+            analysisId={currentAnalysisId}
+            onBack={() => setView("dashboard")}
           />
         )}
 

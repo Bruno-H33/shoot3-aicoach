@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      analyses: {
+        Row: {
+          created_at: string
+          detailed_report: Json | null
+          id: string
+          issues: Json
+          overall_score: number
+          paid: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detailed_report?: Json | null
+          id?: string
+          issues?: Json
+          overall_score?: number
+          paid?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detailed_report?: Json | null
+          id?: string
+          issues?: Json
+          overall_score?: number
+          paid?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
