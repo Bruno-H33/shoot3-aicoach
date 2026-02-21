@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportViewProps {
@@ -115,10 +115,21 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
       <div className="flex-1 overflow-y-auto pb-10">
         {/* Header */}
         <div className="px-5 pt-12 pb-6">
-          <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground mb-6 active:opacity-70">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-body text-sm">Retour</span>
-          </button>
+          <div className="flex items-center justify-between mb-6 no-print">
+            <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground active:opacity-70">
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-body text-sm">Retour</span>
+            </button>
+            <button
+              onClick={() => {
+                window.print();
+              }}
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-body text-xs font-semibold tracking-wider active:scale-95 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </button>
+          </div>
 
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />

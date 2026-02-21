@@ -216,3 +216,25 @@
   font-size: 0.75rem;
   text-shadow: 0 0 8px #00ff41;
 }
+
+/* Print styles for PDF export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .nav-bar,
+  .no-print {
+    display: none !important;
+  }
+  .mobile-container {
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+  .mobile-container > div {
+    overflow: visible !important;
+  }
+}
