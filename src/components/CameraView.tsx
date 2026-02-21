@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { X, SwitchCamera, Play, Square } from "lucide-react";
 
 interface CameraViewProps {
-  onComplete: (issues?: ShotIssue[]) => void;
+  onComplete: (issues?: ShotIssue[], frames?: string[]) => void;
   onClose: () => void;
 }
 
@@ -114,6 +114,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const analysisAbortRef = useRef<AbortController | null>(null);
   const isSpeakingRef = useRef(false);
   const ttsUrlsRef = useRef<string[]>([]);
+  const keyFramesRef = useRef<string[]>([]);
 
   // Pre-fetch static voice lines (go + done)
   const goCacheRef = useRef<string | null>(null);
@@ -166,6 +167,11 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       if (!videoRef.current) return;
       const frame = captureFrame(videoRef.current);
       if (!frame) return;
+
+      // Save key frames (max 5 evenly spaced)
+      if (keyFramesRef.current.length < 5) {
+        keyFramesRef.current.push(frame);
+      }
 
       try {
         const controller = new AbortController();
@@ -246,7 +252,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       setTerminalProgress((p) => {
         if (p >= terminalLines.length) {
           clearInterval(interval);
-          setTimeout(() => onComplete(liveIssues.length > 0 ? liveIssues : undefined), 500);
+          const frames = keyFramesRef.current.length > 0 ? [...keyFramesRef.current] : undefined;
+          setTimeout(() => onComplete(liveIssues.length > 0 ? liveIssues : undefined, frames), 500);
           return p;
         }
         return p + 1;
@@ -257,6 +264,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
   const handleRecord = () => {
     if (phase === "idle") {
+      keyFramesRef.current = [];
       setPhase("countdown");
       setLiveIssues([]);
     }

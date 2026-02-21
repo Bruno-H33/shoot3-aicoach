@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportViewProps {
@@ -41,6 +41,7 @@ interface Report {
 
 const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
   const [report, setReport] = useState<Report | null>(null);
+  const [framesUrls, setFramesUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDiag, setExpandedDiag] = useState<number | null>(0);
@@ -48,6 +49,16 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
+        // Fetch frames URLs from the analysis record
+        const { data: analysisData } = await supabase
+          .from("analyses")
+          .select("frames_urls")
+          .eq("id", analysisId)
+          .single();
+        if (analysisData?.frames_urls) {
+          setFramesUrls(analysisData.frames_urls as string[]);
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke("generate-report", {
           body: { analysisId },
         });
@@ -140,6 +151,31 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
             <p className="font-body text-sm text-foreground/80 leading-relaxed">{report.intro}</p>
           </div>
         </div>
+
+        {/* Key Frames */}
+        {framesUrls.length > 0 && (
+          <div className="px-5 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Camera className="w-4 h-4 text-primary" />
+              <h2 className="font-sport text-2xl text-foreground tracking-wider">FRAMES CLÉS</h2>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+              {framesUrls.map((url, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-28 h-40 rounded-xl overflow-hidden border border-white/10 snap-start"
+                >
+                  <img
+                    src={url}
+                    alt={`Frame ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Diagnosis */}
         {report.diagnosis.length > 0 && (
