@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Bell, Lock, Play, Dumbbell, User, LogOut, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, Lock, Play, Dumbbell, User, LogOut, Trash2, FileText } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -23,10 +23,27 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport }: DashboardProps) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
+
+  // Fetch past paid reports
+  useEffect(() => {
+    if (!user) return;
+    const fetchReports = async () => {
+      const { data } = await supabase
+        .from("analyses")
+        .select("id, overall_score, created_at")
+        .eq("user_id", user.id)
+        .eq("paid", true)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (data) setPastReports(data);
+    };
+    fetchReports();
+  }, [user]);
 
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
@@ -119,6 +136,47 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 Fais un test de 30s pour obtenir ton diagnostic IA gratuit.
               </p>
             </div>
+
+            {/* Past Reports */}
+            {pastReports.length > 0 && onViewReport && (
+              <div
+                className="rounded-2xl p-5 border border-white/10"
+                style={{ background: "rgba(10,10,10,0.9)" }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <h3 className="font-sport text-xl text-foreground tracking-wider">MES RAPPORTS</h3>
+                </div>
+                <div className="space-y-2">
+                  {pastReports.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => onViewReport(r.id)}
+                      className="w-full flex items-center justify-between rounded-xl p-3 border border-white/5 active:scale-98 transition-all hover:border-primary/30"
+                      style={{ background: "rgba(20,20,20,0.8)" }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-sport text-sm text-foreground">RAPPORT D'ANALYSE</p>
+                          <p className="font-body text-[10px] text-muted-foreground">
+                            {new Date(r.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-sport text-lg ${r.overall_score >= 80 ? "text-green-400" : r.overall_score >= 60 ? "text-primary" : "text-red-400"}`}>
+                          {r.overall_score}
+                        </p>
+                        <p className="font-body text-[9px] text-muted-foreground">/100</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Heatmap (7J) - Locked with real content preview */}
             <div
