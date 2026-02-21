@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Bell, Lock, Play, Dumbbell, User } from "lucide-react";
+import { Bell, Lock, Play, Dumbbell, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange }: DashboardProps) => {
+  const { signOut } = useAuth();
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
 
@@ -553,6 +555,18 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 REJOINDRE LA LIGUE · 14.99€/MOIS
               </button>
             </div>
+
+            {/* Déconnexion */}
+            <button
+              onClick={async () => {
+                await signOut();
+                window.location.href = "/";
+              }}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl py-3 px-6 border border-white/10 font-body text-sm text-muted-foreground transition-all active:scale-95 hover:border-destructive/50 hover:text-destructive"
+            >
+              <LogOut className="w-4 h-4" />
+              Se déconnecter
+            </button>
 
             <div className="pb-2" />
           </div>
