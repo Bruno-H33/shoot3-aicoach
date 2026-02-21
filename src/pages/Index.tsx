@@ -68,7 +68,7 @@ const Index = () => {
 
   // If user is already authenticated, skip to dashboard
   useEffect(() => {
-    if (!loading && user && view === "splash") {
+    if (!loading && user && view === "splash" && !searchParams.get("payment")) {
       const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
       if (name) setUserName(name);
       
