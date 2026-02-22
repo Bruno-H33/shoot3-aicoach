@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { frames } = await req.json();
+    const { frames, context } = await req.json();
+    const isLive = context === "live";
 
     if (!frames || !Array.isArray(frames) || frames.length === 0) {
       return new Response(JSON.stringify({ error: "Missing frames array" }), {
@@ -102,7 +103,15 @@ RÈGLES :
 - "key" : UNIQUEMENT parmi cette liste fermée : "chicken_wing", "thumb_flick", "hitch", "flat_arc", "stiff_legs", "no_follow_through", "lean_back", "unstable_base". AUCUNE AUTRE VALEUR N'EST ACCEPTÉE.
 - "label" : nom simple en français (ex: "Coude ouvert", "Main guide qui pousse")
 - "confidence" : nombre entre 0.0 et 1.0 indiquant ta certitude sur cette détection. 1.0 = tu es absolument sûr. 0.5 = possible mais pas certain.
-- "feedback_fr" : 2 à 3 phrases max. Structure obligatoire :
+- "feedback_fr" : ${isLive
+? `UNE SEULE phrase très courte (max 8 mots). Tu es un coach qui crie une instruction pendant l'action. Pas de bonjour, pas d'explication, juste la correction immédiate.
+  Exemples :
+  - "Rentre ton coude !"
+  - "Fléchis plus les genoux !"
+  - "Finis ton geste, col de cygne !"
+  - "Attention, ton coude s'écarte !"
+  - "Propre, continue !" (si le tir est bon)`
+: `2 à 3 phrases max. Structure obligatoire :
   1) Courte accroche encourageante (ex: "Bon effort !", "Bien joué !")
   2) Correction technique claire et pro (ex: "J'ai détecté une raideur dans tes appuis.")
   3) Impact sur le tir pour créer l'urgence (ex: "Ça bloque ton transfert de force et raccourcit ta portée.")
@@ -112,7 +121,7 @@ RÈGLES :
   - "Pas mal ! Ta main guide pousse le ballon au release. Ça crée une rotation latérale qui te fait rater à gauche."
   - "Bel élan ! Mais tes jambes sont trop raides. Tu perds toute la puissance du sol, ton tir arrive court."
   - "Joli geste ! Mais tu ne finis pas ton follow-through. Sans le col de cygne, tu perds le contrôle de ta trajectoire."
-  - "Propre ! Ton mécanique est solide, continue comme ça." (si le tir est bon)
+  - "Propre ! Ton mécanique est solide, continue comme ça." (si le tir est bon)`}
 - "overall_score" : score global de 0 à 100
 
 RÈGLES ANTI-HALLUCINATION :
