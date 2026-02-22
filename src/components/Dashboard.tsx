@@ -137,18 +137,35 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               </p>
             </div>
 
-            {/* Past Reports */}
-            {pastReports.length > 0 && onViewReport && (
-              <div
-                className="rounded-2xl p-5 border border-white/10"
-                style={{ background: "rgba(10,10,10,0.9)" }}
+            {/* Bannière Upgrade */}
+            <div
+              className="rounded-2xl p-4 border border-primary/20 flex items-center justify-between gap-3"
+              style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.95), rgba(40,18,4,0.9))" }}
+            >
+              <div className="flex-1">
+                <h4 className="font-sport text-lg text-foreground tracking-wider">PASSE AU NIVEAU SUPÉRIEUR</h4>
+                <p className="font-body text-[11px] text-muted-foreground leading-relaxed">Découvre le programme Sniper Elite et le Pass Team.</p>
+              </div>
+              <button
+                onClick={() => onTabChange("pro")}
+                className="flex-shrink-0 bg-primary text-primary-foreground font-body text-[11px] font-semibold tracking-wider px-4 py-2 rounded-xl transition-all active:scale-95 glow-orange"
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-primary" />
-                  <h3 className="font-sport text-xl text-foreground tracking-wider">MES RAPPORTS</h3>
-                </div>
-                <div className="space-y-2">
-                  {pastReports.map((r) => (
+                VOIR LES OFFRES
+              </button>
+            </div>
+
+            {/* Mes Rapports */}
+            <div
+              className="rounded-2xl p-5 border border-white/10"
+              style={{ background: "rgba(10,10,10,0.9)" }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-primary" />
+                <h3 className="font-sport text-xl text-foreground tracking-wider">MES RAPPORTS</h3>
+              </div>
+              <div className="space-y-2">
+                {pastReports.length > 0 && onViewReport ? (
+                  pastReports.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => onViewReport(r.id)}
@@ -173,10 +190,37 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                         <p className="font-body text-[9px] text-muted-foreground">/100</p>
                       </div>
                     </button>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <>
+                    {[
+                      { label: "Rapport d'analyse #1", date: "—", score: "—" },
+                      { label: "Rapport d'analyse #2", date: "—", score: "—" },
+                    ].map((r, i) => (
+                      <div
+                        key={i}
+                        className="w-full flex items-center justify-between rounded-xl p-3 border border-white/5 opacity-40"
+                        style={{ background: "rgba(20,20,20,0.8)" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-sport text-sm text-foreground">{r.label}</p>
+                            <p className="font-body text-[10px] text-muted-foreground">{r.date}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-sport text-lg text-muted-foreground">{r.score}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="font-body text-[10px] text-muted-foreground text-center mt-1">Lance ton premier test pour voir tes rapports ici.</p>
+                  </>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Heatmap (7J) - Locked with real content preview */}
             <div
@@ -386,6 +430,24 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                     </button>
                   )}
                 </div>
+
+                {/* Partager mon Diagnostic */}
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.origin + "/diagnostic");
+                    toast({
+                      title: "Lien copié !",
+                      description: "Prêt à être posté dans le Discord Shoot3.",
+                    });
+                  }}
+                  className="w-full rounded-2xl p-4 border border-primary/20 font-sport text-sm tracking-widest text-primary transition-all active:scale-98 hover:bg-primary/10 flex items-center justify-center gap-3"
+                  style={{ background: "rgba(20,8,2,0.6)" }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+                  </svg>
+                  PARTAGER MON DIAGNOSTIC (VESTIAIRE)
+                </button>
               </div>
             )}
           </>
@@ -528,7 +590,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               <h3 className="font-sport text-3xl text-foreground">PASSE AU <span className="text-primary">NIVEAU SUP</span></h3>
             </div>
 
-            {/* Offer 1 — PDF Report 9.99€ */}
+            {/* Offer 1 — Rapport d'Analyse 9.99€ */}
             <div className="rounded-2xl p-5 border border-white/10" style={{ background: "rgba(14,10,8,0.95)" }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
@@ -547,9 +609,9 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               </div>
               <ul className="space-y-2 mb-5">
                 {[
-                  "Décryptage visuel de tes erreurs (frame-by-frame)",
-                  "Analyse chiffrée de ta biomécanique (angles, appuis)",
-                  "Routine express : 3 exercices ciblés pour corriger",
+                  "Décryptage visuel (frame-by-frame)",
+                  "Analyse chiffrée (angles, appuis)",
+                  "Routine express ciblée",
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <div className="w-1 h-1 rounded-full bg-primary/70 flex-shrink-0 mt-1.5" />
@@ -562,7 +624,41 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               </button>
             </div>
 
-            {/* Offer 2 — Sniper Elite 49.99€ */}
+            {/* Offer 2 — Pass Team 19.99€/mois */}
+            <div className="rounded-2xl p-5 border border-blue-500/20" style={{ background: "rgba(8,10,18,0.95)" }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-sport text-xl text-foreground tracking-wider">PASS TEAM SHOOT3</h4>
+                  <span className="font-body text-xs text-blue-400/80">Abonnement mensuel · Sans engagement</span>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-5">
+                {[
+                  "1 analyse biomécanique par semaine",
+                  "Le Vestiaire (Groupe privé d'entraide)",
+                  "Ligue Shoot3 (Classements & Challenges)",
+                  "Shoot3 ID (CV Sportif Certifié)",
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
+                    <span className="font-body text-xs text-foreground/70">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => handleOfferClick(PRICES.team)} disabled={checkoutLoading === PRICES.team} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20 disabled:opacity-50">
+                REJOINDRE LA LIGUE · 19.99€/MOIS
+              </button>
+            </div>
+
+            {/* Offer 3 — Sniper Elite 49.99€ */}
             <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.98), rgba(45,18,4,0.95))", boxShadow: "0 0 0 1.5px hsl(var(--primary) / 0.6), 0 0 24px hsl(var(--primary) / 0.18), 0 0 48px hsl(var(--primary) / 0.08)" }}>
               <div className="absolute top-4 right-4">
                 <span className="font-body text-[9px] font-bold tracking-widest bg-primary text-primary-foreground px-2.5 py-1 rounded-full uppercase">RECOMMANDÉ</span>
@@ -580,12 +676,12 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   <span className="font-body text-xs text-primary/80">30 Jours · Bootcamp sur-mesure</span>
                 </div>
               </div>
-              <ul className="space-y-2 mb-5">
+              <ul className="space-y-2 mb-4">
                 {[
-                  "Plan d'entraînement IA sur 30 jours",
+                  "Plan de training sur 30 jours (+10 analyses)",
                   "Check-up biomécanique hebdomadaire",
-                  "Exercices neuro-cognitifs (vitesse & focus)",
-                  "Ajustement de la difficulté selon tes progrès",
+                  "Exercices neuro-cognitifs",
+                  "Ajustement selon tes progrès",
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0 mt-1.5" />
@@ -593,37 +689,28 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </li>
                 ))}
               </ul>
+
+              {/* Séparateur inclus Pass Team */}
+              <div className="border-t border-primary/30 my-4 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-sport text-xs text-primary tracking-widest">+ INCLUS : TOUS LES AVANTAGES DU PASS TEAM</span>
+                </div>
+                <ul className="space-y-1.5">
+                  {[
+                    "Le Vestiaire (Groupe privé)",
+                    "Ligue Shoot3 (Classements & Challenges)",
+                    "Shoot3 ID (CV Sportif Certifié)",
+                  ].map((f) => (
+                    <li key={f} className="flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
+                      <span className="font-body text-[11px] text-foreground/60">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <button onClick={() => handleOfferClick(PRICES.sniper)} disabled={checkoutLoading === PRICES.sniper} className="btn-primary w-full text-base py-3 disabled:opacity-50">
                 DÉMARRER LE BOOTCAMP · 49.99€
-              </button>
-            </div>
-
-            {/* Offer 3 — Team 14.99€/mois */}
-            <div className="rounded-2xl p-5 border border-blue-500/20" style={{ background: "rgba(8,10,18,0.95)" }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-sport text-xl text-foreground tracking-wider">PASS TEAM SHOOT3</h4>
-                  <span className="font-body text-xs text-blue-400/80">Abonnement mensuel · Sans engagement</span>
-                </div>
-              </div>
-              <ul className="space-y-2 mb-5">
-                {["Accès à la communauté privée", "Lives mensuels avec invités Pros", "Participations aux Défis et Events", "Shoot3 ID : Ton CV Sportif Certifié (en 3 mois)"].map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
-                    <span className="font-body text-xs text-foreground/70">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => handleOfferClick(PRICES.team)} disabled={checkoutLoading === PRICES.team} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20 disabled:opacity-50">
-                REJOINDRE LA LIGUE · 14.99€/MOIS
               </button>
             </div>
 
