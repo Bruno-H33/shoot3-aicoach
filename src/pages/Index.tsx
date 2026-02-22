@@ -28,7 +28,10 @@ const Index = () => {
   const [accessGranted, setAccessGranted] = useState(() => sessionStorage.getItem("s3_access_granted") === "true");
   const [userName, setUserName] = useState("");
   const [onboardingData, setOnboardingData] = useState<{ position: string; objective: string } | null>(null);
-  const [hasCompletedTest, setHasCompletedTest] = useState(false);
+  const [hasCompletedTest, setHasCompletedTest] = useState(() => {
+    const code = sessionStorage.getItem("s3_access_code");
+    return code === "SHOOT3ADMIN";
+  });
   const [isRegistered, setIsRegistered] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeTab, setActiveTab] = useState("studio");

@@ -28,6 +28,7 @@ const AccessCodeGate = ({ onValidated }: AccessCodeGateProps) => {
       if (data?.valid) {
         toast.success(`Accès validé ! ${data.remaining} test${data.remaining > 1 ? "s" : ""} restant${data.remaining > 1 ? "s" : ""}`);
         sessionStorage.setItem("s3_access_granted", "true");
+        sessionStorage.setItem("s3_access_code", code.trim().toUpperCase());
         onValidated();
       } else {
         setError(data?.error || "Code invalide");
