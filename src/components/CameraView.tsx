@@ -246,21 +246,51 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     return () => clearTimeout(t);
   }, [phase, timeLeft]);
 
-  // Terminal animation
+  // Terminal animation + final diagnostic analysis
   useEffect(() => {
     if (phase !== "processing") return;
+    let cancelled = false;
+    const finalResultRef = { current: null as any[] | null };
+
+    // Launch final diagnostic analysis with all key frames in parallel
+    const runFinalAnalysis = async () => {
+      const frames = keyFramesRef.current;
+      if (frames.length === 0) return;
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ frames, context: "diagnostic" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.issues && !cancelled) {
+            finalResultRef.current = data.issues;
+          }
+        }
+      } catch (e) {
+        console.error("Final diagnostic analysis error", e);
+      }
+    };
+    runFinalAnalysis();
+
     const interval = setInterval(() => {
       setTerminalProgress((p) => {
         if (p >= terminalLines.length) {
           clearInterval(interval);
           const frames = keyFramesRef.current.length > 0 ? [...keyFramesRef.current] : undefined;
-          setTimeout(() => onComplete(liveIssues.length > 0 ? liveIssues : undefined, frames), 500);
+          // Use final diagnostic result if available, otherwise fall back to live issues
+          const issues = finalResultRef.current || (liveIssues.length > 0 ? liveIssues : undefined);
+          setTimeout(() => onComplete(issues && issues.length > 0 ? issues : undefined, frames), 500);
           return p;
         }
         return p + 1;
       });
     }, 280);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [phase, onComplete]);
 
   const handleRecord = () => {
