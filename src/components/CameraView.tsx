@@ -181,7 +181,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ frames: [frame] }),
+          body: JSON.stringify({ frames: [frame], context: "live" }),
           signal: controller.signal,
         });
 
