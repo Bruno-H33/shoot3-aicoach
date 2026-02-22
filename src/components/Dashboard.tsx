@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
   sniper: "price_1T347IRKXHvnBBog16QQGxBo",
-  team: "price_1T346TRKXHvnBBognXYKppBj",
+  team: "price_1T3irvRKXHvnBBogPa9edglS",
 };
 
 interface DashboardProps {
