@@ -28,6 +28,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
+  const [showAllReports, setShowAllReports] = useState(false);
 
   // Fetch past paid reports
   useEffect(() => {
@@ -165,32 +166,42 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               </div>
               <div className="space-y-2">
                 {pastReports.length > 0 && onViewReport ? (
-                  pastReports.map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={() => onViewReport(r.id)}
-                      className="w-full flex items-center justify-between rounded-xl p-3 border border-white/5 active:scale-98 transition-all hover:border-primary/30"
-                      style={{ background: "rgba(20,20,20,0.8)" }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                          <FileText className="w-4 h-4 text-primary" />
+                  <>
+                    {(showAllReports ? pastReports : pastReports.slice(0, 3)).map((r) => (
+                      <button
+                        key={r.id}
+                        onClick={() => onViewReport(r.id)}
+                        className="w-full flex items-center justify-between rounded-xl p-3 border border-white/5 active:scale-98 transition-all hover:border-primary/30"
+                        style={{ background: "rgba(20,20,20,0.8)" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                            <FileText className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-sport text-sm text-foreground">RAPPORT D'ANALYSE</p>
+                            <p className="font-body text-[10px] text-muted-foreground">
+                              {new Date(r.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-left">
-                          <p className="font-sport text-sm text-foreground">RAPPORT D'ANALYSE</p>
-                          <p className="font-body text-[10px] text-muted-foreground">
-                            {new Date(r.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                        <div className="text-right">
+                          <p className={`font-sport text-lg ${r.overall_score >= 80 ? "text-green-400" : r.overall_score >= 60 ? "text-primary" : "text-red-400"}`}>
+                            {r.overall_score}
                           </p>
+                          <p className="font-body text-[9px] text-muted-foreground">/100</p>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-sport text-lg ${r.overall_score >= 80 ? "text-green-400" : r.overall_score >= 60 ? "text-primary" : "text-red-400"}`}>
-                          {r.overall_score}
-                        </p>
-                        <p className="font-body text-[9px] text-muted-foreground">/100</p>
-                      </div>
-                    </button>
-                  ))
+                      </button>
+                    ))}
+                    {pastReports.length > 3 && (
+                      <button
+                        onClick={() => setShowAllReports(!showAllReports)}
+                        className="w-full font-body text-xs text-primary/80 hover:text-primary py-2 transition-colors"
+                      >
+                        {showAllReports ? "Voir moins" : `Voir tout (${pastReports.length})`}
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <>
                     {[
