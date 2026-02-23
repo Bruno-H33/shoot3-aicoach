@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const SNIPER_PRICE_ID = "price_1T347IRKXHvnBBog16QQGxBo";
-const TEAM_PRICE_ID = "price_1T346TRKXHvnBBognXYKppBj";
+const TEAM_PRICE_ID = "price_1T3irvRKXHvnBBogPa9edglS";
 
 interface NoCreditsModalProps {
   onClose: () => void;
@@ -95,7 +95,7 @@ const NoCreditsModal = ({ onClose }: NoCreditsModalProps) => {
               disabled={loading !== null}
               className="w-full border border-blue-500/40 text-blue-400 font-sport text-sm tracking-widest py-2.5 rounded-xl transition-all active:scale-98 disabled:opacity-50 hover:bg-blue-500/10"
             >
-              {loading === TEAM_PRICE_ID ? "REDIRECTION..." : "REJOINDRE — 14.99€/MOIS"}
+              {loading === TEAM_PRICE_ID ? "REDIRECTION..." : "REJOINDRE — 19.99€/MOIS"}
             </button>
           </div>
 

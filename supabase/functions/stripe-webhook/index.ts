@@ -10,7 +10,8 @@ const corsHeaders = {
 // Credits per price ID
 const CREDITS_MAP: Record<string, number> = {
   "price_1T347IRKXHvnBBog16QQGxBo": 15, // Sniper Elite
-  "price_1T346TRKXHvnBBognXYKppBj": 8,  // Pass Team Shoot3
+  "price_1T3irvRKXHvnBBogPa9edglS": 8,  // Pass Team Shoot3
+  "price_1T345HRKXHvnBBog0jfr2XdU": 1,  // Rapport d'Analyse
 };
 
 const log = (step: string, details?: any) => {
