@@ -24,6 +24,7 @@ interface DashboardProps {
 
 const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport }: DashboardProps) => {
   const { signOut, user } = useAuth();
+  const isAdmin = sessionStorage.getItem("s3_access_code") === "SHOOT3ADMIN";
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -238,7 +239,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               className="rounded-2xl p-5 border border-white/10 relative overflow-hidden"
               style={{ background: "rgba(10,10,10,0.85)" }}
             >
-              <div className="opacity-30 grayscale blur-[2px] pointer-events-none">
+              <div className={isAdmin ? "" : "opacity-30 grayscale blur-[2px] pointer-events-none"}>
                 <div className="flex items-center justify-between mb-1">
                   <div>
                     <h3 className="font-sport text-xl text-foreground tracking-wider">Heatmap (7J)</h3>
@@ -270,14 +271,16 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   ))}
                 </div>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
+              {!isAdmin && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-2xl">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
+                      <Lock className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <span className="font-body text-[10px] text-muted-foreground tracking-widest uppercase">Test requis</span>
                   </div>
-                  <span className="font-body text-[10px] text-muted-foreground tracking-widest uppercase">Test requis</span>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Team Shoot3 - Locked with real content preview */}
@@ -285,7 +288,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               className="rounded-2xl p-5 border border-blue-500/15 relative overflow-hidden"
               style={{ background: "rgba(8,10,20,0.9)" }}
             >
-              <div className="opacity-30 grayscale blur-[2px] pointer-events-none flex items-center gap-4">
+              <div className={isAdmin ? "flex items-center gap-4" : "opacity-30 grayscale blur-[2px] pointer-events-none flex items-center gap-4"}>
                 <div className="w-14 h-14 rounded-2xl bg-blue-900/60 flex items-center justify-center flex-shrink-0">
                   <User className="w-7 h-7 text-blue-400" />
                 </div>
@@ -303,11 +306,13 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">Membres</p>
                 </div>
               </div>
-              <div className="absolute top-3 right-3">
-                <div className="w-8 h-8 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <Lock className="w-4 h-4 text-muted-foreground" />
+              {!isAdmin && (
+                <div className="absolute top-3 right-3">
+                  <div className="w-8 h-8 rounded-full bg-background/80 border border-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <Lock className="w-4 h-4 text-muted-foreground" />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
