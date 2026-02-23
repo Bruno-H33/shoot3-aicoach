@@ -645,7 +645,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   "1 analyse biomécanique par semaine",
                   "Le Vestiaire (Groupe privé d'entraide)",
                   "Ligue Shoot3 (Classements & Challenges)",
-                  "Shoot3 ID (CV Sportif Certifié)",
+                  "Shoot3 ID (CV Sportif Certifié au bout de 3 mois)",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-blue-400/60 flex-shrink-0" />
@@ -673,14 +673,14 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 </div>
                 <div>
                   <h4 className="font-sport text-xl text-foreground tracking-wider">PROGRAMME SNIPER ELITE</h4>
-                  <span className="font-body text-xs text-primary/80">30 Jours · Bootcamp sur-mesure</span>
+                  <span className="font-body text-xs text-primary/80">3 Mois · Bootcamp sur-mesure</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-4">
                 {[
-                  "Plan de training sur 30 jours (+10 analyses)",
+                  "Plan de training sur 3 mois (+12 analyses)",
                   "Check-up biomécanique hebdomadaire",
-                  "Exercices neuro-cognitifs",
+                  "Exercices neuro-cognitifs et méca.",
                   "Ajustement selon tes progrès",
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -699,7 +699,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   {[
                     "Le Vestiaire (Groupe privé)",
                     "Ligue Shoot3 (Classements & Challenges)",
-                    "Shoot3 ID (CV Sportif Certifié)",
+                    "Shoot3 ID (CV Sportif Certifié au bout de 3 mois)",
                   ].map((f) => (
                     <li key={f} className="flex items-center gap-2">
                       <div className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
