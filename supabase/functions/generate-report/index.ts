@@ -94,6 +94,12 @@ Réponds en JSON valide, sans markdown autour. Structure :
   "score": ${score},
   "score_label": "string (Excellent / Très bon / Bon / À travailler / Urgence technique)",
   "intro": "string — 2-3 phrases personnalisées d'accroche. Mentionne le score, donne le ton.",
+  "strengths": [
+    {
+      "title": "string — nom du point fort",
+      "detail": "string — Ce que tu as observé de positif (2-3 phrases, factuel et encourageant)"
+    }
+  ],
   "diagnosis": [
     {
       "title": "string — nom du problème",
@@ -127,6 +133,7 @@ Réponds en JSON valide, sans markdown autour. Structure :
 }
 
 RÈGLES :
+- POINTS FORTS : identifie 2 à 4 points forts RÉELS observés dans l'analyse (alignement, fluidité, équilibre, follow-through, etc.). Base-toi uniquement sur les issues fournies et le score. Ne fabrique pas de compliments génériques.
 - ZÉRO HALLUCINATION : chaque diagnostic doit correspondre à une issue fournie. Ne rajoute rien.
 - MÊME SI le score est >= 80 et qu'il y a peu ou pas d'erreurs majeures : tu DOIS quand même fournir AU MINIMUM 1 diagnostic d'amélioration dans le tableau "diagnosis". Cherche un axe de perfectionnement pertinent et cohérent avec ce qui a été observé pendant l'analyse vidéo (les issues fournies). Par exemple : régularité du follow-through, stabilité des appuis, timing du release, etc. Ne félicite pas sans proposer de progression.
 - Si des erreurs sont détectées : sois honnête et direct mais jamais négatif. Chaque problème a une solution. Félicite ce qui va bien avant de corriger.

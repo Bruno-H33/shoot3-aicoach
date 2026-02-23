@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportViewProps {
@@ -12,6 +12,11 @@ interface Exercise {
   duration: string;
   description: string;
   target: string;
+}
+
+interface Strength {
+  title: string;
+  detail: string;
 }
 
 interface Diagnosis {
@@ -33,6 +38,7 @@ interface Report {
   score: number;
   score_label: string;
   intro: string;
+  strengths: Strength[];
   diagnosis: Diagnosis[];
   exercises: Exercise[];
   weekly_plan: { description: string; days: DayPlan[] };
@@ -182,6 +188,28 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Strengths */}
+        {report.strengths && report.strengths.length > 0 && (
+          <div className="px-5 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <h2 className="font-sport text-2xl text-foreground tracking-wider">POINTS FORTS</h2>
+            </div>
+            <div className="space-y-3">
+              {report.strengths.map((s, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl p-4 border border-green-500/20"
+                  style={{ background: "rgba(10,10,10,0.9)" }}
+                >
+                  <h3 className="font-sport text-lg text-green-400 mb-2">{s.title}</h3>
+                  <p className="font-body text-sm text-foreground/80 leading-relaxed">{s.detail}</p>
                 </div>
               ))}
             </div>
