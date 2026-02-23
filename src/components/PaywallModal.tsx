@@ -83,19 +83,27 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
             style={{ background: "rgba(20, 30, 50, 0.8)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             {topIssue ? (
-              <p className="font-body text-base text-foreground leading-relaxed">
-                "{userName}, {topIssue.feedback_fr}"
-              </p>
+              <div className="space-y-3">
+                <p className="font-body text-base text-foreground leading-relaxed">
+                  "Bien joué {userName} ! 💪 Ton score est de <span className="font-semibold">{score}/100</span>."
+                </p>
+                <p className="font-body text-base text-foreground/80 leading-relaxed">
+                  "J'ai repéré un point clé à corriger : <span className="text-primary font-semibold">{topIssue.label}</span>. {topIssue.feedback_fr}"
+                </p>
+                <p className="font-body text-base text-foreground/70 leading-relaxed italic">
+                  "On va bosser là-dessus ensemble. Débloque ton rapport pour recevoir ton plan d'action personnalisé."
+                </p>
+              </div>
             ) : (
-              <p className="font-body text-base text-foreground leading-relaxed">
-                "{userName}, ton analyse IA est prête. Découvre ton rapport complet avec les axes d'amélioration personnalisés."
-              </p>
+              <div className="space-y-3">
+                <p className="font-body text-base text-foreground leading-relaxed">
+                  "Bravo {userName} ! 🔥 Ton score est de <span className="font-semibold">{score}/100</span>, c'est du solide."
+                </p>
+                <p className="font-body text-base text-foreground/70 leading-relaxed italic">
+                  "Débloque ton rapport complet pour découvrir tes axes de perfectionnement et maintenir ce niveau."
+                </p>
+              </div>
             )}
-            <div className="border-t border-white/10 mt-4 pt-4">
-              <p className="font-body text-sm text-muted-foreground">
-                Score de stabilité : <span className="text-foreground font-semibold">{score}/100</span>
-              </p>
-            </div>
           </div>
 
           {/* Additional issues preview */}
