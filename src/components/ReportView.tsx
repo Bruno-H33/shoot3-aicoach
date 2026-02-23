@@ -55,12 +55,19 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        // Fetch frames URLs from the analysis record
+        // Check if the analysis is paid before generating report
         const { data: analysisData } = await supabase
           .from("analyses")
-          .select("frames_urls")
+          .select("frames_urls, paid")
           .eq("id", analysisId)
           .single();
+        
+        if (!analysisData?.paid) {
+          setError("Ce rapport n'a pas été acheté. Achète le rapport pour y accéder.");
+          setLoading(false);
+          return;
+        }
+        
         if (analysisData?.frames_urls) {
           setFramesUrls(analysisData.frames_urls as string[]);
         }

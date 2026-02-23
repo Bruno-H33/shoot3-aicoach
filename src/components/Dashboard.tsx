@@ -429,8 +429,8 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                     </button>
                   </div>
 
-                  {/* Report CTA */}
-                  {analysisId && onViewReport ? (
+          {/* Report CTA */}
+                  {analysisId && onViewReport && pastReports.some(r => r.id === analysisId) ? (
                     <button
                       onClick={() => onViewReport(analysisId)}
                       className="mt-4 w-full bg-primary text-primary-foreground font-sport text-xs tracking-widest py-2.5 rounded-xl transition-all active:scale-98"
