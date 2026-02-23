@@ -128,7 +128,7 @@ Réponds en JSON valide, sans markdown autour. Structure :
 
 RÈGLES :
 - ZÉRO HALLUCINATION : chaque diagnostic doit correspondre à une issue fournie. Ne rajoute rien.
-- Si le score est >= 80 et pas d'erreurs : félicite sincèrement, souligne ce qui est bien fait, propose des exercices de perfectionnement et de régularité.
+- MÊME SI le score est >= 80 et qu'il y a peu ou pas d'erreurs majeures : tu DOIS quand même fournir AU MINIMUM 1 diagnostic d'amélioration dans le tableau "diagnosis". Cherche un axe de perfectionnement pertinent et cohérent avec ce qui a été observé pendant l'analyse vidéo (les issues fournies). Par exemple : régularité du follow-through, stabilité des appuis, timing du release, etc. Ne félicite pas sans proposer de progression.
 - Si des erreurs sont détectées : sois honnête et direct mais jamais négatif. Chaque problème a une solution. Félicite ce qui va bien avant de corriger.
 - Si certains éléments n'ont pas pu être analysés (ballon non visible, arc non mesurable, appuis hors cadre), signale-le clairement dans le diagnostic au lieu d'inventer.
 - Propose 3 à 5 exercices adaptés UNIQUEMENT aux problèmes effectivement détectés.
