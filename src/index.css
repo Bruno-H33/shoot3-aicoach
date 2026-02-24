@@ -217,6 +217,22 @@
   text-shadow: 0 0 8px #00ff41;
 }
 
+/* Landscape camera adjustments */
+@media (orientation: landscape) {
+  .landscape\:pt-2 { padding-top: 0.5rem !important; }
+  .landscape\:top-10 { top: 2.5rem !important; }
+  .landscape\:top-12 { top: 3rem !important; }
+  .landscape\:top-20 { top: 5rem !important; }
+  .landscape\:bottom-2 { bottom: 0.5rem !important; }
+  .landscape\:bottom-14 { bottom: 3.5rem !important; }
+  .landscape\:py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+  .landscape\:p-2 { padding: 0.5rem !important; }
+  .landscape\:text-3xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+  .landscape\:text-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
+  .landscape\:left-\[20\%\] { left: 20% !important; }
+  .landscape\:right-\[20\%\] { right: 20% !important; }
+}
+
 /* Print styles for PDF export */
 @media print {
   body {
