@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
+import SniperEliteModal from "@/components/SniperEliteModal";
 
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
@@ -27,6 +28,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const isAdmin = sessionStorage.getItem("s3_access_code") === "SHOOT3ADMIN";
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
+  const [sniperModalOpen, setSniperModalOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
   const [showAllReports, setShowAllReports] = useState(false);
@@ -725,7 +727,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 </ul>
               </div>
 
-              <button onClick={() => handleOfferClick(PRICES.sniper)} disabled={checkoutLoading === PRICES.sniper} className="btn-primary w-full text-base py-3 disabled:opacity-50">
+              <button onClick={() => setSniperModalOpen(true)} className="btn-primary w-full text-base py-3">
                 DÉMARRER LE BOOTCAMP · 49.99€
               </button>
             </div>
@@ -837,6 +839,17 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
           </button>
         </DialogContent>
       </Dialog>
+
+      {/* Sniper Elite Detail Modal */}
+      <SniperEliteModal
+        open={sniperModalOpen}
+        onClose={() => setSniperModalOpen(false)}
+        onSubscribe={() => {
+          setSniperModalOpen(false);
+          handleOfferClick(PRICES.sniper);
+        }}
+        loading={checkoutLoading === PRICES.sniper}
+      />
     </div>
   );
 };
