@@ -312,7 +312,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   };
 
   return (
-    <div className="mobile-container flex flex-col bg-black relative overflow-hidden h-[100dvh]">
+    <div className="fixed inset-0 flex flex-col bg-black relative overflow-hidden w-screen h-[100dvh]">
       {!cameraError ? (
         <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
       ) : (
@@ -323,7 +323,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
       <div className="relative z-10 flex flex-col h-full">
         {/* Top badge */}
-        <div className="flex justify-center pt-14">
+        <div className="flex justify-center pt-[max(0.75rem,env(safe-area-inset-top))] landscape:pt-2">
           <div className="glass px-6 py-2 rounded-full border border-white/15">
             <span className="font-body text-xs tracking-[0.3em] text-foreground uppercase">
               {phase === "recording" ? "Analyse IA en direct" : "Test de Niveau Gratuit"}
@@ -332,10 +332,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         </div>
 
         {/* Corner brackets */}
-        <div className="absolute top-28 left-8 w-10 h-10 border-t-2 border-l-2 border-primary rounded-tl" />
-        <div className="absolute top-28 right-8 w-10 h-10 border-t-2 border-r-2 border-primary rounded-tr" />
-        <div className="absolute bottom-36 left-8 w-10 h-10 border-b-2 border-l-2 border-primary rounded-bl" />
-        <div className="absolute bottom-36 right-8 w-10 h-10 border-b-2 border-r-2 border-primary rounded-br" />
+        <div className="absolute top-20 landscape:top-10 left-8 w-10 h-10 border-t-2 border-l-2 border-primary rounded-tl" />
+        <div className="absolute top-20 landscape:top-10 right-8 w-10 h-10 border-t-2 border-r-2 border-primary rounded-tr" />
+        <div className="absolute bottom-28 landscape:bottom-14 left-8 w-10 h-10 border-b-2 border-l-2 border-primary rounded-bl" />
+        <div className="absolute bottom-28 landscape:bottom-14 right-8 w-10 h-10 border-b-2 border-r-2 border-primary rounded-br" />
 
         {/* Scanner line */}
         {phase === "recording" && <div className="scanner-line absolute left-0 right-0" />}
@@ -355,20 +355,20 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
         {/* Recording timer */}
         {phase === "recording" && (
-          <div className="absolute top-32 left-0 right-0 flex justify-center">
-            <div className="glass px-6 py-3 rounded-2xl border border-primary/30">
-              <span className="font-sport text-5xl text-primary">{String(timeLeft).padStart(2, "0")}s</span>
+          <div className="absolute top-24 landscape:top-12 left-0 right-0 flex justify-center">
+            <div className="glass px-6 py-2 landscape:py-1 rounded-2xl border border-primary/30">
+              <span className="font-sport text-5xl landscape:text-3xl text-primary">{String(timeLeft).padStart(2, "0")}s</span>
             </div>
           </div>
         )}
 
         {/* Live AI Feedback — dynamic from real analysis */}
         {phase === "recording" && liveIssues.length > 0 && (
-          <div className="absolute top-52 left-6 right-6 space-y-3">
+          <div className="absolute top-44 landscape:top-20 left-6 right-6 landscape:left-[20%] landscape:right-[20%] space-y-2 max-h-[40vh] overflow-y-auto">
             {liveIssues.map((issue) => (
               <div
                 key={issue.key}
-                className="rounded-2xl p-4 animate-fade-in-up border border-destructive/40"
+                className="rounded-2xl p-3 landscape:p-2 animate-fade-in-up border border-destructive/40"
                 style={{ background: "rgba(220, 38, 38, 0.15)", backdropFilter: "blur(16px)" }}
               >
                 <div className="flex items-center gap-3">
@@ -377,7 +377,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
                     <p className="font-body text-xs text-destructive font-bold tracking-widest uppercase">
                       ⚡ Feedback Live IA
                     </p>
-                    <p className="font-body text-sm text-foreground mt-1">
+                    <p className="font-body text-sm landscape:text-xs text-foreground mt-1">
                       {issue.feedback_fr}
                     </p>
                   </div>
@@ -408,7 +408,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
         {/* Bottom controls */}
         {phase !== "processing" && (
-          <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-10">
+          <div className="absolute bottom-6 landscape:bottom-2 left-0 right-0 flex items-center justify-center gap-10">
             <button onClick={onClose} className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15">
               <X className="w-6 h-6 text-foreground" />
             </button>
