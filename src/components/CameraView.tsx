@@ -131,6 +131,22 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     };
   }, []);
 
+  // Request fullscreen on mount for true immersive experience
+  useEffect(() => {
+    const el = document.documentElement;
+    const requestFs = el.requestFullscreen
+      ?? (el as any).webkitRequestFullscreen
+      ?? (el as any).msRequestFullscreen;
+    if (requestFs) {
+      requestFs.call(el).catch(() => {});
+    }
+    return () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, []);
+
   // Camera start
   useEffect(() => {
     const startCamera = async () => {
