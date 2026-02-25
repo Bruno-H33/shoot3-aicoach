@@ -328,7 +328,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-black relative overflow-hidden w-screen h-[100dvh]">
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-black overflow-hidden" style={{ width: '100vw', height: '100dvh', margin: 0, padding: 0 }}>
       {!cameraError ? (
         <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
       ) : (
