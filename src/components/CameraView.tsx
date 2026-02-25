@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, SwitchCamera, Play, Square } from "lucide-react";
 
 interface CameraViewProps {
@@ -327,8 +328,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     return "bg-yellow-500";
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex flex-col bg-black overflow-hidden" style={{ width: '100vw', height: '100dvh', margin: 0, padding: 0 }}>
+  const content = (
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-black overflow-hidden" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100dvh', margin: 0, padding: 0 }}>
       {!cameraError ? (
         <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
       ) : (
@@ -448,6 +449,8 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 };
 
 export default CameraView;
