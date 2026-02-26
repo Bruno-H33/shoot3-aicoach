@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Lock, Star, Zap, Brain, Shield, ShieldCheck } from "lucide-react";
+import { Lock, Star, Zap, Brain, Shield } from "lucide-react";
 import previewReport from "@/assets/preview-report-sniper.png";
 import previewTracking from "@/assets/preview-tracking.jpg";
 
@@ -104,14 +104,14 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
           <div className="flex items-center justify-center gap-2">
             <Lock className="w-3 h-3 text-muted-foreground" />
             <span className="font-body text-[10px] text-muted-foreground">
-              Paiement unique et 100% sécurisé via Stripe
+              Paiement unique et 100% sécurisé
             </span>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3 h-3 text-muted-foreground/60" />
-            <span className="font-body text-[9px] text-muted-foreground/60 leading-tight">
-              Garantie de progression : Satisfait ou remboursé sous 14 jours si ta mécanique ne s'améliore pas.
+          <div className="flex items-center justify-center gap-2">
+            <Zap className="w-3 h-3 text-muted-foreground" />
+            <span className="font-body text-[10px] text-muted-foreground">
+              Accès immédiat et à vie à ton rapport et ton programme
             </span>
           </div>
         </div>
