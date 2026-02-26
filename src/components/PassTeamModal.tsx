@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Lock, Star, Users, Trophy, ShieldCheck, Tv } from "lucide-react";
-import previewReport from "@/assets/preview-report.jpg";
+import previewReport from "@/assets/preview-report-passteam.png";
 import previewTracking from "@/assets/preview-tracking.jpg";
 
 interface PassTeamModalProps {
@@ -38,7 +38,7 @@ const PassTeamModal = ({ open, onClose, onSubscribe, loading }: PassTeamModalPro
                   "Le vestiaire m'a motivé comme jamais. En 3 semaines, j'ai plus progressé qu'en 6 mois seul."
                 </p>
                 <p className="font-body text-[10px] text-blue-400/70 font-semibold tracking-wide">
-                  — Sofiane, 16 ans
+                  — Léo, U15 R2
                 </p>
               </div>
             </DialogDescription>
