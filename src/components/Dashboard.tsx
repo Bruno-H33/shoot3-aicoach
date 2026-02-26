@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import SniperEliteModal from "@/components/SniperEliteModal";
+import PassTeamModal from "@/components/PassTeamModal";
 
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
@@ -30,6 +31,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
   const [sniperModalOpen, setSniperModalOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
   const [showAllReports, setShowAllReports] = useState(false);
 
@@ -671,7 +673,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   </li>
                 ))}
               </ul>
-              <button onClick={() => handleOfferClick(PRICES.team)} disabled={checkoutLoading === PRICES.team} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20 disabled:opacity-50">
+              <button onClick={() => setTeamModalOpen(true)} className="w-full border border-blue-500/40 text-blue-300 font-sport text-base tracking-widest py-2.5 rounded-xl transition-all active:scale-98 hover:border-blue-400/60 hover:bg-blue-900/20">
                 REJOINDRE LA LIGUE · 19.99€/MOIS
               </button>
             </div>
@@ -849,6 +851,17 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
           handleOfferClick(PRICES.sniper);
         }}
         loading={checkoutLoading === PRICES.sniper}
+      />
+
+      {/* Pass Team Detail Modal */}
+      <PassTeamModal
+        open={teamModalOpen}
+        onClose={() => setTeamModalOpen(false)}
+        onSubscribe={() => {
+          setTeamModalOpen(false);
+          handleOfferClick(PRICES.team);
+        }}
+        loading={checkoutLoading === PRICES.team}
       />
     </div>
   );
