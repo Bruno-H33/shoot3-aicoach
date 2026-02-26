@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Lock, Star, Users, Trophy, ShieldCheck, Tv } from "lucide-react";
+import { Lock, Star, Users, Trophy, Zap, Tv } from "lucide-react";
 import previewReport from "@/assets/preview-report-passteam.png";
 import previewTracking from "@/assets/preview-tracking.jpg";
 
@@ -109,14 +109,14 @@ const PassTeamModal = ({ open, onClose, onSubscribe, loading }: PassTeamModalPro
           <div className="flex items-center justify-center gap-2">
             <Lock className="w-3 h-3 text-muted-foreground" />
             <span className="font-body text-[10px] text-muted-foreground">
-              Sans engagement · Annulable à tout moment · Paiement sécurisé
+              Paiement 100% sécurisé
             </span>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3 h-3 text-muted-foreground/60" />
-            <span className="font-body text-[9px] text-muted-foreground/60 leading-tight">
-              Garantie satisfait ou remboursé sous 14 jours si le programme ne te convient pas.
+          <div className="flex items-center justify-center gap-2">
+            <Zap className="w-3 h-3 text-muted-foreground" />
+            <span className="font-body text-[10px] text-muted-foreground">
+              Sans engagement : annule ton abonnement en 1 clic à tout moment
             </span>
           </div>
         </div>
