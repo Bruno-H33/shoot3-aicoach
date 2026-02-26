@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Lock, Star, Zap, Brain, Shield, ShieldCheck } from "lucide-react";
-import previewReport from "@/assets/preview-report.jpg";
+import previewReport from "@/assets/preview-report-sniper.png";
 import previewTracking from "@/assets/preview-tracking.jpg";
 
 interface SniperEliteModalProps {
