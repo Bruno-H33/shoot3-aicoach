@@ -83,11 +83,22 @@ const playAudioUrl = (url: string): Promise<void> =>
   });
 
 // --- Frame capture helper ---
-const captureFrame = (video: HTMLVideoElement, quality = 0.6): string | null => {
+// For live analysis: lower res for speed. For key frames (report): full HD.
+const captureFrame = (video: HTMLVideoElement, quality = 0.8, forReport = false): string | null => {
   const canvas = document.createElement("canvas");
-  // Downsample for speed
-  canvas.width = 480;
-  canvas.height = 640;
+  if (forReport) {
+    // Full HD capped at 1920px height, maintain aspect ratio
+    const ratio = video.videoWidth / video.videoHeight;
+    const maxH = 1920;
+    const h = Math.min(video.videoHeight, maxH);
+    const w = Math.round(h * ratio);
+    canvas.width = w;
+    canvas.height = h;
+  } else {
+    // Low-res for live analysis speed
+    canvas.width = 480;
+    canvas.height = 640;
+  }
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -183,12 +194,13 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
     const analyze = async () => {
       if (!videoRef.current) return;
-      const frame = captureFrame(videoRef.current);
+      const frame = captureFrame(videoRef.current, 0.6, false);
       if (!frame) return;
 
-      // Save key frames (max 5 evenly spaced)
+      // Save key frames in full HD for the report (max 10)
       if (keyFramesRef.current.length < 10) {
-        keyFramesRef.current.push(frame);
+        const hdFrame = captureFrame(videoRef.current, 0.8, true);
+        if (hdFrame) keyFramesRef.current.push(hdFrame);
       }
 
       try {
