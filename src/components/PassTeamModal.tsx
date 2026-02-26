@@ -1,23 +1,23 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Lock, Star, Zap, Brain, Shield, ShieldCheck } from "lucide-react";
+import { Lock, Star, Users, Trophy, ShieldCheck, Tv } from "lucide-react";
 import previewReport from "@/assets/preview-report.jpg";
 import previewTracking from "@/assets/preview-tracking.jpg";
 
-interface SniperEliteModalProps {
+interface PassTeamModalProps {
   open: boolean;
   onClose: () => void;
   onSubscribe: () => void;
   loading?: boolean;
 }
 
-const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteModalProps) => {
+const PassTeamModal = ({ open, onClose, onSubscribe, loading }: PassTeamModalProps) => {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent
-        className="max-w-md mx-auto border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="max-w-md mx-auto border-blue-500/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto"
         style={{
-          background: "linear-gradient(180deg, rgba(15,6,1,0.99) 0%, rgba(30,12,2,0.97) 50%, rgba(10,4,1,0.99) 100%)",
-          boxShadow: "0 0 0 1px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.15)",
+          background: "linear-gradient(180deg, rgba(5,8,18,0.99) 0%, rgba(10,14,28,0.97) 50%, rgba(4,6,14,0.99) 100%)",
+          boxShadow: "0 0 0 1px rgba(59,130,246,0.3), 0 0 40px rgba(59,130,246,0.1)",
         }}
       >
         <div className="px-6 pt-6 pb-2">
@@ -29,16 +29,16 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
               ))}
             </div>
             <DialogTitle className="font-sport text-2xl text-foreground tracking-wider text-center">
-              PROGRAMME SNIPER ELITE
+              PASS TEAM SHOOT3
             </DialogTitle>
             {/* Testimonial */}
             <DialogDescription asChild>
               <div className="text-center space-y-1.5 pt-1">
                 <p className="font-body text-[11px] italic text-foreground/60 leading-relaxed px-2">
-                  "J'ai gagné 25% de réussite à 3 points et corrigé mon coude en 4 semaines."
+                  "Le vestiaire m'a motivé comme jamais. En 3 semaines, j'ai plus progressé qu'en 6 mois seul."
                 </p>
-                <p className="font-body text-[10px] text-primary/70 font-semibold tracking-wide">
-                  — Nathan, 18 ans
+                <p className="font-body text-[10px] text-blue-400/70 font-semibold tracking-wide">
+                  — Sofiane, 16 ans
                 </p>
               </div>
             </DialogDescription>
@@ -46,28 +46,28 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
 
           {/* Promise */}
           <p className="font-body text-sm text-foreground/90 leading-relaxed text-center mb-5">
-            Ne laisse plus ton tir au hasard. En <span className="text-primary font-semibold">90 jours</span>, transforme ta mécanique, augmente ta vitesse de déclenchement et débloque ton{" "}
-            <span className="text-primary font-semibold">Shoot3 ID Certifié</span> pour les recruteurs.
+            Rejoins une communauté de shooteurs déterminés. <span className="text-blue-400 font-semibold">1 analyse par semaine</span>, des défis quotidiens, et ton{" "}
+            <span className="text-blue-400 font-semibold">Shoot3 ID Certifié</span> au bout de 3 mois.
           </p>
 
-          {/* Program details */}
+          {/* Features */}
           <div className="space-y-3 mb-5">
             {[
-              { icon: Zap, month: "Mois 1", label: "Biomécanique & Vitesse de réaction" },
-              { icon: Brain, month: "Mois 2", label: "Prise de décision sous fatigue" },
-              { icon: Shield, month: "Mois 3", label: "Résistance à la pression & Certification" },
-            ].map(({ icon: Icon, month, label }) => (
+              { icon: Tv, label: "1 analyse biomécanique / semaine", detail: "Suivi continu de ta progression" },
+              { icon: Users, label: "Le Vestiaire (Groupe privé)", detail: "Entraide, conseils, motivation" },
+              { icon: Trophy, label: "Ligue Shoot3 & Défis", detail: "Classements et challenges hebdo" },
+            ].map(({ icon: Icon, label, detail }) => (
               <div
-                key={month}
+                key={label}
                 className="flex items-center gap-3 rounded-xl px-4 py-3"
-                style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.15)" }}
+                style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}
               >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--primary) / 0.2)" }}>
-                  <Icon className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(59,130,246,0.15)" }}>
+                  <Icon className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
-                  <span className="font-sport text-xs text-primary tracking-wider">{month}</span>
-                  <p className="font-body text-xs text-foreground/80">{label}</p>
+                  <span className="font-sport text-xs text-blue-400 tracking-wider">{label}</span>
+                  <p className="font-body text-xs text-foreground/70">{detail}</p>
                 </div>
               </div>
             ))}
@@ -80,11 +80,11 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
             </p>
             <div className="flex gap-3">
               <div className="flex-1 rounded-xl overflow-hidden border border-white/10">
-                <img src={previewReport} alt="Aperçu du rapport PDF hebdomadaire" className="w-full h-24 object-cover" />
-                <p className="font-body text-[9px] text-muted-foreground text-center py-1.5 bg-black/40">Plan de semaine</p>
+                <img src={previewReport} alt="Aperçu du rapport d'analyse" className="w-full h-24 object-cover" />
+                <p className="font-body text-[9px] text-muted-foreground text-center py-1.5 bg-black/40">Analyse hebdo</p>
               </div>
               <div className="flex-1 rounded-xl overflow-hidden border border-white/10">
-                <img src={previewTracking} alt="Aperçu du tracking IA biomécanique" className="w-full h-24 object-cover" />
+                <img src={previewTracking} alt="Aperçu du tracking IA" className="w-full h-24 object-cover" />
                 <p className="font-body text-[9px] text-muted-foreground text-center py-1.5 bg-black/40">Tracking IA</p>
               </div>
             </div>
@@ -96,22 +96,27 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
           <button
             onClick={onSubscribe}
             disabled={loading}
-            className="btn-primary w-full text-base py-3.5 font-sport tracking-wider disabled:opacity-50"
+            className="w-full text-base py-3.5 font-sport tracking-wider rounded-xl transition-all active:scale-98 disabled:opacity-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(59,130,246,0.9), rgba(37,99,235,0.9))",
+              color: "white",
+              boxShadow: "0 0 20px rgba(59,130,246,0.3)",
+            }}
           >
-            {loading ? "CHARGEMENT..." : "ACCÉDER AU BOOTCAMP — 49.99€"}
+            {loading ? "CHARGEMENT..." : "REJOINDRE LA LIGUE — 19.99€/MOIS"}
           </button>
 
           <div className="flex items-center justify-center gap-2">
             <Lock className="w-3 h-3 text-muted-foreground" />
             <span className="font-body text-[10px] text-muted-foreground">
-              Paiement unique et 100% sécurisé via Stripe
+              Sans engagement · Annulable à tout moment · Paiement sécurisé
             </span>
           </div>
 
           <div className="flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3 h-3 text-muted-foreground/60" />
             <span className="font-body text-[9px] text-muted-foreground/60 leading-tight">
-              Garantie de progression : Satisfait ou remboursé sous 14 jours si ta mécanique ne s'améliore pas.
+              Garantie satisfait ou remboursé sous 14 jours si le programme ne te convient pas.
             </span>
           </div>
         </div>
@@ -120,4 +125,4 @@ const SniperEliteModal = ({ open, onClose, onSubscribe, loading }: SniperEliteMo
   );
 };
 
-export default SniperEliteModal;
+export default PassTeamModal;
