@@ -136,7 +136,7 @@ Réponds en JSON valide, sans markdown autour. Structure :
       { "day": "Dimanche", "focus": "Repos", "exercises": [] }
     ]
   },
-  "motivation": "string — 3-4 phrases de motivation finale. Parle de la répétition, du travail de l'ombre, de la confiance. Donne envie de commencer maintenant."
+  "motivation": "string — 5 à 6 phrases MAXIMUM, structurées EXACTEMENT ainsi :\n\n1) LA VALORISATION (1 phrase) : Reconnais l'effort du joueur. Valorise le fait qu'il a pris le temps de s'analyser aujourd'hui.\n\n2) LA LEÇON PHILOSOPHIQUE (2-3 phrases) : CHOISIS ALÉATOIREMENT UN SEUL des 4 axes suivants (ne les mélange JAMAIS entre eux pour éviter la répétition) :\n   - Axe Stoïcisme : Se concentrer uniquement sur ce qu'on contrôle (le process, la mécanique) et lâcher prise sur le résultat immédiat (le ballon qui rentre ou non).\n   - Axe Kaizen : L'amélioration continue de 1% chaque jour. Le chemin est long, la consistance est la clé.\n   - Axe Zone de Confort : Changer sa mécanique est inconfortable au début, mais c'est le seul pont vers la zone de performance.\n   - Axe Confiance & Estime : Avoir une foi aveugle dans le travail de l'ombre pour construire la meilleure version de soi-même.\n\n3) LA QUESTION D'IMPACT (1 phrase) : Termine TOUJOURS par une question de réflexion ouverte, directe, qui pique la conscience du joueur sur ses à-côtés (nutrition, sommeil, temps d'écran, clarté de ses objectifs, ou focus mental).\n\nTon ton doit être posé, encourageant, mais exigeant. Agis comme un mentor mental de sport de haut niveau, style Maître Zen / Phil Jackson. Ce n'est PAS un simple résumé technique."
 }
 
 RÈGLES :
