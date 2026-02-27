@@ -98,14 +98,21 @@ Analyse les frames dans l'ordre chronologique du tir. Pour chaque étape, identi
 
 === ERREURS À DÉTECTER (clés valides) ===
 
-1. COUDE OUVERT ("Chicken Wing") → clé: chicken_wing
-2. MAIN GUIDE QUI POUSSE ("Thumb Flick") → clé: thumb_flick
-3. SACCADE dans le mouvement ("Hitch") → clé: hitch
-4. TIR TROP PLAT → clé: flat_arc
-5. JAMBES RAIDES → clé: stiff_legs
-6. PAS DE FOLLOW-THROUGH → clé: no_follow_through
-7. PENCHÉ EN ARRIÈRE → clé: lean_back
-8. BASE INSTABLE → clé: unstable_base
+1. PIEDS TROP SERRÉS → clé: narrow_base
+2. PIEDS TROP DE FACE → clé: square_stance
+3. HANCHES NON FLÉCHIES À LA RÉCEPTION → clé: stiff_legs
+4. BALLON SUR LA PAUME → clé: palm_ball
+5. PAS DE DIP → clé: no_dip
+6. COUDE ÉCARTÉ ("Chicken Wing") → clé: chicken_wing
+7. ANGLE DU COUDE INCORRECT → clé: elbow_angle
+8. POINT D'ARMÉ TROP BAS → clé: low_setpoint
+9. MAIN TIREUSE PART SUR LE CÔTÉ → clé: hand_drift
+10. BALLON ROULE SUR LE PETIT DOIGT → clé: pinky_roll
+11. BUSTE ET COU TROP RAIDES → clé: stiff_upper
+12. PAS DE CASSAGE DU POIGNET → clé: no_follow_through
+13. MAIN GUIDE TOMBE → clé: guide_hand_drop
+14. ATTERRISSAGE DÉSÉQUILIBRÉ → clé: lean_back
+15. BRAS BAISSÉ TROP VITE → clé: early_arm_drop
 
 === COMMENT TU T'EXPRIMES ===
 
@@ -114,17 +121,41 @@ Tu es un Coach de Basket NBA d'Élite. Tu tutoies le joueur, tu es direct, pro e
 RÈGLES :
 - Réponds UNIQUEMENT avec un JSON valide, sans markdown ni texte autour.
 - Format : { "issues": [{ "key": string, "label": string, "severity": "low"|"medium"|"high", "confidence": number, "feedback_fr": string }], "overall_score": number }
-- "key" : UNIQUEMENT parmi cette liste fermée : "chicken_wing", "thumb_flick", "hitch", "flat_arc", "stiff_legs", "no_follow_through", "lean_back", "unstable_base". AUCUNE AUTRE VALEUR N'EST ACCEPTÉE.
+- "key" : UNIQUEMENT parmi cette liste fermée : "narrow_base", "square_stance", "stiff_legs", "palm_ball", "no_dip", "chicken_wing", "elbow_angle", "low_setpoint", "hand_drift", "pinky_roll", "stiff_upper", "no_follow_through", "guide_hand_drop", "lean_back", "early_arm_drop". AUCUNE AUTRE VALEUR N'EST ACCEPTÉE.
 - "label" : nom simple en français (ex: "Coude ouvert", "Main guide qui pousse")
 - "confidence" : nombre entre 0.0 et 1.0 indiquant ta certitude sur cette détection. 1.0 = tu es absolument sûr. 0.5 = possible mais pas certain.
 - "feedback_fr" : ${isLive
-? `UNE SEULE phrase très courte (max 8 mots). Tu es un coach qui crie une instruction pendant l'action. Pas de bonjour, pas d'explication, juste la correction immédiate.
-  Exemples :
-  - "Rentre ton coude !"
-  - "Fléchis plus les genoux !"
-  - "Finis ton geste, col de cygne !"
-  - "Attention, ton coude s'écarte !"
-  - "Propre, continue !" (si le tir est bon)`
+? `UNE SEULE phrase ultra-courte (4 à 8 mots MAX) à l'impératif. Tu es un coach NBA sur le terrain qui observe en direct. L'audio doit durer moins de 2 secondes. Aucun "Bonjour", aucune explication, aucune justification. Juste la correction physique immédiate.
+
+DICTIONNAIRE DES DÉTECTIONS — utilise EXACTEMENT une de ces phrases selon l'erreur vue :
+
+**Étape 1 — Appuis :**
+- Pieds trop serrés → "Pense à écarter tes appuis !" ou "Tu dois écarter plus tes appuis !"
+- Pieds trop de face → "Décale un de tes pieds !" ou "Pense à décaler un de tes pieds !"
+- Hanches non fléchies à la réception → "Tu es trop raide à la réception !" ou "Fléchis plus lors de ta réception !"
+
+**Étape 2 — Placement et rythme :**
+- Ballon sur la paume → "Ton ballon doit être sur le bout des doigts !" ou "Décolle ton ballon de ta paume !"
+- Pas de dip → "Tu n'as pas fait de dip !" ou "Prends de l'élan grâce au dip !"
+
+**Étape 3 — Montée et alignement :**
+- Coude écarté (chicken wing) → "Rentre ton coude !" ou "Ton coude part trop sur le côté !"
+- Angle du coude trop fermé/ouvert → "Garde le coude à 90 degrés !"
+- Point d'armé trop bas → "Tu dois armer plus haut !" ou "Ton ballon doit partir au-dessus de ta tête !"
+
+**Étape 4 — Lâcher et main faible :**
+- Main tireuse part sur le côté → "Attention ta main doit rester droite !" ou "Oblige-toi à garder la main vers le cercle !"
+- Ballon roule sur le petit doigt → "Essaie de finir avec l'index et le majeur !"
+- Buste et cou trop raides → "Relâche tes épaules pour plus de fluidité !"
+
+**Étape 5 — Finition :**
+- Pas de cassage du poignet → "Casse le poignet !" ou "Finis bien la main dans le cercle !"
+- Main guide tombe tout de suite → "Garde la main faible en l'air !"
+- Atterrissage déséquilibré → "Atterris équilibré !" ou "Attention à ton équilibre quand tu atterris !"
+- Bras baissé trop vite → "Garde le bras en l'air !" ou "Maintiens ton bras après le shoot !"
+
+RÈGLE : Si plusieurs erreurs, choisis la plus grave (priorité : appuis > coude > finition). Une seule phrase par réponse.
+Si le tir est propre → "Propre, continue comme ça !"`
 : `2 à 3 phrases max. Structure obligatoire :
   1) Courte accroche encourageante (ex: "Bon effort !", "Bien joué !")
   2) Correction technique précise liée à l'étape chronologique concernée (ex: "À l'étape du dip, ton ballon ne descend pas assez.")
@@ -181,8 +212,9 @@ RÈGLES ANTI-HALLUCINATION :
     // Parse the JSON from the AI response
     let analysis;
     const VALID_KEYS = new Set([
-      "chicken_wing", "thumb_flick", "hitch", "flat_arc",
-      "stiff_legs", "no_follow_through", "lean_back", "unstable_base"
+      "narrow_base", "square_stance", "stiff_legs", "palm_ball", "no_dip",
+      "chicken_wing", "elbow_angle", "low_setpoint", "hand_drift", "pinky_roll",
+      "stiff_upper", "no_follow_through", "guide_hand_drop", "lean_back", "early_arm_drop"
     ]);
     const CONFIDENCE_THRESHOLD = 0.7;
 
