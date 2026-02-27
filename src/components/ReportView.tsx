@@ -20,13 +20,9 @@ interface Strength {
   detail: string;
 }
 
-interface Annotation {
-  type: "angle";
-  box_y_min: number;
-  box_x_min: number;
-  box_y_max: number;
-  box_x_max: number;
-  angle_value: number;
+interface FocusPoint {
+  focus_x: number;
+  focus_y: number;
 }
 
 interface Diagnosis {
@@ -36,7 +32,7 @@ interface Diagnosis {
   why: string;
   fix: string;
   frame_index?: number;
-  annotations?: Annotation[];
+  focus_points?: FocusPoint[];
 }
 
 interface DayPlan {
@@ -255,12 +251,12 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                   </div>
                   {expandedDiag === i && (
                     <div className="mt-4 space-y-3 animate-fade-in-up">
-                      {/* Annotated frame */}
-                      {d.frame_index !== undefined && d.annotations && d.annotations.length > 0 && framesUrls[d.frame_index] && (
+                      {/* Annotated frame with focus ring */}
+                      {d.frame_index !== undefined && framesUrls[d.frame_index] && (
                         <div className="rounded-xl overflow-hidden border border-primary/30 mb-3">
                           <AnnotatedFrame
                             imageUrl={framesUrls[d.frame_index]}
-                            annotations={d.annotations}
+                            annotations={d.focus_points || []}
                             className="w-full h-auto"
                           />
                         </div>
