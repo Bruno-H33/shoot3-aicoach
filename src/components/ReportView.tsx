@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle } from "lucide-react";
+import AnnotatedFrame from "@/components/AnnotatedFrame";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportViewProps {
@@ -19,12 +20,25 @@ interface Strength {
   detail: string;
 }
 
+interface AnnotationPoint {
+  x: number;
+  y: number;
+}
+
+interface Annotation {
+  type: "angle";
+  points: AnnotationPoint[];
+  angle_value: number;
+}
+
 interface Diagnosis {
   title: string;
   severity: string;
   what: string;
   why: string;
   fix: string;
+  frame_index?: number;
+  annotations?: Annotation[];
 }
 
 interface DayPlan {
@@ -243,6 +257,16 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                   </div>
                   {expandedDiag === i && (
                     <div className="mt-4 space-y-3 animate-fade-in-up">
+                      {/* Annotated frame */}
+                      {d.frame_index !== undefined && d.annotations && d.annotations.length > 0 && framesUrls[d.frame_index] && (
+                        <div className="rounded-xl overflow-hidden border border-primary/30 mb-3">
+                          <AnnotatedFrame
+                            imageUrl={framesUrls[d.frame_index]}
+                            annotations={d.annotations}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      )}
                       <div>
                         <p className="font-body text-xs text-muted-foreground tracking-widest uppercase mb-1">Ce qu'on observe</p>
                         <p className="font-body text-sm text-foreground/80">{d.what}</p>
