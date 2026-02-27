@@ -111,11 +111,10 @@ Réponds en JSON valide, sans markdown autour. Structure :
       "annotations": [
         {
           "type": "angle",
-          "points": [
-            { "x": "number (0-100, % horizontal)", "y": "number (0-100, % vertical)" },
-            { "x": "number — sommet de l'angle (articulation)", "y": "number" },
-            { "x": "number", "y": "number" }
-          ],
+          "box_y_min": "number (0-1000, coordonnée native Gemini spatial grounding)",
+          "box_x_min": "number (0-1000)",
+          "box_y_max": "number (0-1000)",
+          "box_x_max": "number (0-1000)",
           "angle_value": "number — valeur de l'angle en degrés (ex: 112)"
         }
       ]
@@ -154,7 +153,7 @@ RÈGLES :
 - Le plan hebdomadaire doit être réaliste pour un jeune compétiteur (pas plus de 30 min/jour).
 - Les exercices doivent être faisables seul, avec juste un ballon et un panier.
 - Tu tutoies TOUJOURS ${userName}.
-- ANNOTATIONS VISUELLES : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible parmi les frames fournies) et "annotations" (un tableau d'annotations de type "angle"). Chaque annotation contient 3 points (x,y en pourcentages 0-100 relatifs à l'image) formant l'angle, et "angle_value" en degrés. Les points représentent les articulations du joueur (ex: épaule, coude, poignet). Place les coordonnées avec précision sur le corps du joueur tel que tu le vois dans les frames. Si tu ne peux pas estimer les coordonnées précises, fournis tout de même ton meilleur estimé.`,
+- ANNOTATIONS VISUELLES : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible parmi les frames fournies) et "annotations" (un tableau d'annotations de type "angle"). Chaque annotation utilise le format NATIF de Spatial Grounding de Gemini avec des coordonnées de 0 à 1000 (où [0,0] est en haut à gauche et [1000,1000] en bas à droite). Chaque annotation contient : "box_y_min", "box_x_min", "box_y_max", "box_x_max" (la Bounding Box centrée sur l'articulation concernée, ex: le coude, le poignet, les pieds) et "angle_value" en degrés. Place la bounding box PRÉCISÉMENT sur l'articulation du joueur que tu vois dans la frame. La box doit être petite et bien centrée sur le joint concerné.`,
           },
           {
             role: "user",

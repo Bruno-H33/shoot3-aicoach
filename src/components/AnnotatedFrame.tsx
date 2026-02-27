@@ -1,13 +1,14 @@
 import { useRef, useEffect, useState } from "react";
 
-interface Point {
-  x: number; // 0-100 percentage
-  y: number; // 0-100 percentage
+interface BoundingBox {
+  box_y_min: number; // 0-1000 Gemini spatial grounding
+  box_x_min: number;
+  box_y_max: number;
+  box_x_max: number;
 }
 
-interface Annotation {
+interface Annotation extends BoundingBox {
   type: "angle";
-  points: Point[]; // 3 points: [start, vertex, end]
   angle_value: number;
 }
 
@@ -47,63 +48,71 @@ const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFram
 
       // Draw each annotation
       annotations.forEach((ann) => {
-        if (ann.type === "angle" && ann.points?.length === 3) {
-          const pts = ann.points.map((p) => ({
-            x: (p.x / 100) * canvas.width,
-            y: (p.y / 100) * canvas.height,
-          }));
+        if (ann.type === "angle" && ann.box_x_min !== undefined) {
+          // Compute center from bounding box (Gemini 0-1000 coords)
+          const centerX = ((ann.box_x_min + ann.box_x_max) / 2000) * canvas.width;
+          const centerY = ((ann.box_y_min + ann.box_y_max) / 2000) * canvas.height;
 
-          // Draw lines from vertex
+          // Draw crosshair / target indicator at the joint
+          const radius = Math.min(canvas.width, canvas.height) * 0.035;
+
+          // Outer circle
           ctx.strokeStyle = STROKE_COLOR;
           ctx.lineWidth = LINE_WIDTH;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-
           ctx.beginPath();
-          ctx.moveTo(pts[0].x, pts[0].y);
-          ctx.lineTo(pts[1].x, pts[1].y);
-          ctx.lineTo(pts[2].x, pts[2].y);
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
           ctx.stroke();
 
-          // Draw small circles at joints
-          pts.forEach((pt) => {
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = STROKE_COLOR;
-            ctx.fill();
-          });
+          // Inner dot
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+          ctx.fillStyle = STROKE_COLOR;
+          ctx.fill();
 
-          // Draw angle arc at vertex
+          // Cross lines through center
+          const crossLen = radius * 1.4;
+          ctx.beginPath();
+          ctx.moveTo(centerX - crossLen, centerY);
+          ctx.lineTo(centerX + crossLen, centerY);
+          ctx.moveTo(centerX, centerY - crossLen);
+          ctx.lineTo(centerX, centerY + crossLen);
+          ctx.strokeStyle = STROKE_COLOR;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Draw angle text
           if (ann.angle_value) {
-            const vertex = pts[1];
-            const angle1 = Math.atan2(pts[0].y - vertex.y, pts[0].x - vertex.x);
-            const angle2 = Math.atan2(pts[2].y - vertex.y, pts[2].x - vertex.x);
-            const arcRadius = Math.min(canvas.width, canvas.height) * 0.04;
-
-            ctx.beginPath();
-            ctx.arc(vertex.x, vertex.y, arcRadius, Math.min(angle1, angle2), Math.max(angle1, angle2));
-            ctx.strokeStyle = STROKE_COLOR;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Draw angle text
-            const textOffset = arcRadius + 15;
-            const midAngle = (angle1 + angle2) / 2;
-            const textX = vertex.x + Math.cos(midAngle) * textOffset;
-            const textY = vertex.y + Math.sin(midAngle) * textOffset;
-
-            const fontSize = Math.max(14, Math.round(canvas.width * 0.03));
+            const fontSize = Math.max(16, Math.round(canvas.width * 0.035));
             ctx.font = `bold ${fontSize}px sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
-            // Text shadow
+            const textX = centerX;
+            const textY = centerY - radius - fontSize * 0.8;
+
+            // Background pill
+            const text = `${ann.angle_value}°`;
+            const metrics = ctx.measureText(text);
+            const padX = 8;
+            const padY = 4;
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.beginPath();
+            ctx.roundRect(
+              textX - metrics.width / 2 - padX,
+              textY - fontSize / 2 - padY,
+              metrics.width + padX * 2,
+              fontSize + padY * 2,
+              6
+            );
+            ctx.fill();
+
+            // Text
+            ctx.fillStyle = TEXT_COLOR;
             ctx.shadowColor = "rgba(0,0,0,0.8)";
             ctx.shadowBlur = 4;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
-            ctx.fillStyle = TEXT_COLOR;
-            ctx.fillText(`${ann.angle_value}°`, textX, textY);
+            ctx.fillText(text, textX, textY);
 
             // Reset shadow
             ctx.shadowColor = "transparent";
