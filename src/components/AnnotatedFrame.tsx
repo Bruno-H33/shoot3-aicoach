@@ -14,6 +14,7 @@ interface AnnotatedFrameProps {
 const STROKE_COLOR = "#FF4D00";
 const GLOW_COLOR = "rgba(255, 77, 0, 0.5)";
 const LINE_WIDTH = 3;
+const FOCUS_RADIUS_RATIO = 0.06; // 6% of smallest dimension — larger for better coverage
 
 
 const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFrameProps) => {
@@ -48,7 +49,7 @@ const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFram
 
             const centerX = fx * canvas.width;
             const centerY = fy * canvas.height;
-            const radius = Math.min(canvas.width, canvas.height) * 0.04;
+            const radius = Math.min(canvas.width, canvas.height) * FOCUS_RADIUS_RATIO;
 
             // Glow effect
             ctx.save();
