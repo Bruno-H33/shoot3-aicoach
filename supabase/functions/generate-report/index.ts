@@ -106,7 +106,19 @@ Réponds en JSON valide, sans markdown autour. Structure :
       "severity": "low|medium|high",
       "what": "string — Ce que tu as observé (2 phrases max, factuel)",
       "why": "string — Pourquoi c'est un problème (conséquence sur le tir, 2 phrases max)",
-      "fix": "string — Comment corriger ça (conseil concret et simple, 2-3 phrases)"
+      "fix": "string — Comment corriger ça (conseil concret et simple, 2-3 phrases)",
+      "frame_index": "number — numéro de la frame (0-indexé) où l'erreur est la plus visible",
+      "annotations": [
+        {
+          "type": "angle",
+          "points": [
+            { "x": "number (0-100, % horizontal)", "y": "number (0-100, % vertical)" },
+            { "x": "number — sommet de l'angle (articulation)", "y": "number" },
+            { "x": "number", "y": "number" }
+          ],
+          "angle_value": "number — valeur de l'angle en degrés (ex: 112)"
+        }
+      ]
     }
   ],
   "exercises": [
@@ -141,7 +153,8 @@ RÈGLES :
 - Propose 3 à 5 exercices adaptés UNIQUEMENT aux problèmes effectivement détectés.
 - Le plan hebdomadaire doit être réaliste pour un jeune compétiteur (pas plus de 30 min/jour).
 - Les exercices doivent être faisables seul, avec juste un ballon et un panier.
-- Tu tutoies TOUJOURS ${userName}.`,
+- Tu tutoies TOUJOURS ${userName}.
+- ANNOTATIONS VISUELLES : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible parmi les frames fournies) et "annotations" (un tableau d'annotations de type "angle"). Chaque annotation contient 3 points (x,y en pourcentages 0-100 relatifs à l'image) formant l'angle, et "angle_value" en degrés. Les points représentent les articulations du joueur (ex: épaule, coude, poignet). Place les coordonnées avec précision sur le corps du joueur tel que tu le vois dans les frames. Si tu ne peux pas estimer les coordonnées précises, fournis tout de même ton meilleur estimé.`,
           },
           {
             role: "user",
