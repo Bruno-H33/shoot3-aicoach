@@ -251,7 +251,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                   </div>
                   {expandedDiag === i && (
                     <div className="mt-4 space-y-3 animate-fade-in-up">
-                      {/* Annotated frame with focus ring */}
+                      {/* Frame — always shown if available */}
                       {d.frame_index !== undefined && framesUrls[d.frame_index] && (
                         <div className="rounded-xl overflow-hidden border border-primary/30 mb-3">
                           <AnnotatedFrame
