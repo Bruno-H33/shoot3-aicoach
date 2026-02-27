@@ -1,8 +1,8 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 
 interface FocusPoint {
-  focus_x: number; // 0.0 - 1.0
-  focus_y: number; // 0.0 - 1.0
+  focus_x: number | null;
+  focus_y: number | null;
 }
 
 interface AnnotatedFrameProps {
@@ -14,16 +14,26 @@ interface AnnotatedFrameProps {
 const STROKE_COLOR = "#FF4D00";
 const GLOW_COLOR = "rgba(255, 77, 0, 0.5)";
 const LINE_WIDTH = 3;
-const FOCUS_RADIUS_RATIO = 0.06; // 6% of smallest dimension — larger for better coverage
-
+const FOCUS_RADIUS_RATIO = 0.06;
 
 const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFrameProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [dataUrl, setDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!annotations || annotations.length === 0) {
-      setDataUrl(null);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Filter valid annotations
+    const valid = (annotations || []).filter((a) => {
+      const fx = Number(a.focus_x);
+      const fy = Number(a.focus_y);
+      return isFinite(fx) && isFinite(fy) && fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1;
+    });
+
+    if (valid.length === 0) {
+      // Nothing to draw — hide canvas
+      canvas.width = 0;
+      canvas.height = 0;
       return;
     }
 
@@ -31,24 +41,17 @@ const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFram
     img.crossOrigin = "anonymous";
     img.onload = () => {
       try {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        ctx.drawImage(img, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        annotations.forEach((ann) => {
+        valid.forEach((ann) => {
           try {
-            const fx = Number(ann.focus_x);
-            const fy = Number(ann.focus_y);
-            if (!isFinite(fx) || !isFinite(fy) || fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
-
-            const centerX = fx * canvas.width;
-            const centerY = fy * canvas.height;
+            const centerX = Number(ann.focus_x) * canvas.width;
+            const centerY = Number(ann.focus_y) * canvas.height;
             const radius = Math.min(canvas.width, canvas.height) * FOCUS_RADIUS_RATIO;
 
             // Glow effect
@@ -72,19 +75,17 @@ const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFram
 
             ctx.restore();
 
-            // Crosshair lines (no glow for crispness)
+            // Crosshair
             const crossLen = radius * 0.6;
             ctx.strokeStyle = STROKE_COLOR;
             ctx.lineWidth = 1.5;
             ctx.globalAlpha = 0.7;
-
             ctx.beginPath();
             ctx.moveTo(centerX - crossLen, centerY);
             ctx.lineTo(centerX + crossLen, centerY);
             ctx.moveTo(centerX, centerY - crossLen);
             ctx.lineTo(centerX, centerY + crossLen);
             ctx.stroke();
-
             ctx.globalAlpha = 1;
 
             // Center dot
@@ -93,30 +94,35 @@ const AnnotatedFrame = ({ imageUrl, annotations, className = "" }: AnnotatedFram
             ctx.fillStyle = STROKE_COLOR;
             ctx.fill();
           } catch {
-            // Skip invalid annotation silently
+            // Skip invalid annotation
           }
         });
-
-        setDataUrl(canvas.toDataURL("image/jpeg", 0.9));
       } catch {
-        // Canvas drawing failed — keep original image
-        setDataUrl(null);
+        // Canvas drawing failed — canvas stays empty, image still visible beneath
+        canvas.width = 0;
+        canvas.height = 0;
       }
     };
-    img.onerror = () => setDataUrl(null);
+    img.onerror = () => {
+      canvas.width = 0;
+      canvas.height = 0;
+    };
     img.src = imageUrl;
   }, [imageUrl, annotations]);
 
   return (
-    <>
-      <canvas ref={canvasRef} className="hidden" />
+    <div className="relative">
       <img
-        src={dataUrl || imageUrl}
+        src={imageUrl}
         alt="Analyse annotée"
         className={className}
         loading="lazy"
       />
-    </>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+      />
+    </div>
   );
 };
 

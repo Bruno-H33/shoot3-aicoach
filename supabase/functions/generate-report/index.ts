@@ -149,7 +149,8 @@ RÈGLES :
 - Le plan hebdomadaire doit être réaliste pour un jeune compétiteur (pas plus de 30 min/jour).
 - Les exercices doivent être faisables seul, avec juste un ballon et un panier.
 - Tu tutoies TOUJOURS ${userName}.
-- FOCUS VISUEL : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible) et "focus_points" (un tableau avec au moins un objet contenant "focus_x" et "focus_y"). Ces valeurs sont des pourcentages relatifs entre 0.0 et 1.0 (où [0.0, 0.0] = coin haut-gauche et [1.0, 1.0] = coin bas-droite). Pointe sur le CENTRE APPROXIMATIF de la zone du corps du joueur concernée par l'erreur (ex: le coude, les pieds, le poignet). Ne cherche PAS à être ultra-précis au pixel près — vise la bonne zone générale du corps du joueur sur l'image.`,
+- FOCUS VISUEL : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible). Tu DOIS aussi fournir "focus_points" (un tableau avec au moins un objet contenant "focus_x" et "focus_y"). Ces valeurs sont des pourcentages relatifs entre 0.0 et 1.0 (où [0.0, 0.0] = coin haut-gauche et [1.0, 1.0] = coin bas-droite). Pointe sur le CENTRE APPROXIMATIF de la zone du corps du joueur concernée par l'erreur (ex: le coude, les pieds, le poignet). Ne cherche PAS à être ultra-précis au pixel près — vise la bonne zone générale du corps du joueur sur l'image.
+- IMPORTANT : Si tu détectes une erreur globale (posture générale, rythme, timing) et que tu ne peux PAS définir un point spatial précis sur le corps, il est autorisé de renvoyer "focus_points": [] (tableau vide). Mais tu DOIS TOUJOURS renvoyer "frame_index" avec l'index de la frame la plus pertinente pour illustrer le moment de l'erreur.`,
           },
           {
             role: "user",
