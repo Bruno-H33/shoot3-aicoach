@@ -108,14 +108,10 @@ Réponds en JSON valide, sans markdown autour. Structure :
       "why": "string — Pourquoi c'est un problème (conséquence sur le tir, 2 phrases max)",
       "fix": "string — Comment corriger ça (conseil concret et simple, 2-3 phrases)",
       "frame_index": "number — numéro de la frame (0-indexé) où l'erreur est la plus visible",
-      "annotations": [
+      "focus_points": [
         {
-          "type": "angle",
-          "box_y_min": "number (0-1000, coordonnée native Gemini spatial grounding)",
-          "box_x_min": "number (0-1000)",
-          "box_y_max": "number (0-1000)",
-          "box_x_max": "number (0-1000)",
-          "angle_value": "number — valeur de l'angle en degrés (ex: 112)"
+          "focus_x": "number (0.0 à 1.0) — position horizontale relative du centre de la zone d'erreur",
+          "focus_y": "number (0.0 à 1.0) — position verticale relative du centre de la zone d'erreur"
         }
       ]
     }
@@ -153,7 +149,7 @@ RÈGLES :
 - Le plan hebdomadaire doit être réaliste pour un jeune compétiteur (pas plus de 30 min/jour).
 - Les exercices doivent être faisables seul, avec juste un ballon et un panier.
 - Tu tutoies TOUJOURS ${userName}.
-- ANNOTATIONS VISUELLES : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible parmi les frames fournies) et "annotations" (un tableau d'annotations de type "angle"). Chaque annotation utilise le format NATIF de Spatial Grounding de Gemini avec des coordonnées de 0 à 1000 (où [0,0] est en haut à gauche et [1000,1000] en bas à droite). Chaque annotation contient : "box_y_min", "box_x_min", "box_y_max", "box_x_max" (la Bounding Box centrée sur l'articulation concernée, ex: le coude, le poignet, les pieds) et "angle_value" en degrés. Place la bounding box PRÉCISÉMENT sur l'articulation du joueur que tu vois dans la frame. La box doit être petite et bien centrée sur le joint concerné.`,
+- FOCUS VISUEL : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible) et "focus_points" (un tableau avec au moins un objet contenant "focus_x" et "focus_y"). Ces valeurs sont des pourcentages relatifs entre 0.0 et 1.0 (où [0.0, 0.0] = coin haut-gauche et [1.0, 1.0] = coin bas-droite). Pointe sur le CENTRE APPROXIMATIF de la zone du corps du joueur concernée par l'erreur (ex: le coude, les pieds, le poignet). Ne cherche PAS à être ultra-précis au pixel près — vise la bonne zone générale du corps du joueur sur l'image.`,
           },
           {
             role: "user",
