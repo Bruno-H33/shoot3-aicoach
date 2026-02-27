@@ -20,14 +20,12 @@ interface Strength {
   detail: string;
 }
 
-interface AnnotationPoint {
-  x: number;
-  y: number;
-}
-
 interface Annotation {
   type: "angle";
-  points: AnnotationPoint[];
+  box_y_min: number;
+  box_x_min: number;
+  box_y_max: number;
+  box_x_max: number;
   angle_value: number;
 }
 
