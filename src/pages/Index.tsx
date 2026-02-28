@@ -146,8 +146,8 @@ const Index = () => {
         const path = `${userId}/${analysisId}/frame_${i}.jpg`;
         const { error: upErr } = await supabase.storage.from("analysis-frames").upload(path, blob);
         if (upErr) { console.error("Upload frame error:", upErr); continue; }
-        const { data: urlData } = supabase.storage.from("analysis-frames").getPublicUrl(path);
-        if (urlData?.publicUrl) urls.push(urlData.publicUrl);
+        // Store the path (not a public URL) — signed URLs are generated on demand
+        urls.push(path);
       } catch (e) {
         console.error("Frame upload error:", e);
       }
