@@ -65,7 +65,21 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
           .single();
         
         if (analysisData?.frames_urls) {
-          setFramesUrls(analysisData.frames_urls as string[]);
+          const paths = analysisData.frames_urls as string[];
+          // Generate signed URLs for private bucket access
+          const signedUrls: string[] = [];
+          for (const p of paths) {
+            // If it's already a full URL (legacy public), use as-is; otherwise create signed URL
+            if (p.startsWith("http")) {
+              signedUrls.push(p);
+            } else {
+              const { data: signedData } = await supabase.storage
+                .from("analysis-frames")
+                .createSignedUrl(p, 3600); // 1 hour expiry
+              if (signedData?.signedUrl) signedUrls.push(signedData.signedUrl);
+            }
+          }
+          setFramesUrls(signedUrls);
         }
 
         const { data, error: fnError } = await supabase.functions.invoke("generate-report", {
