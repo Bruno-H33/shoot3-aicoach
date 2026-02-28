@@ -20,11 +20,6 @@ interface Strength {
   detail: string;
 }
 
-interface FocusPoint {
-  focus_x: number;
-  focus_y: number;
-}
-
 interface Diagnosis {
   title: string;
   severity: string;
@@ -32,7 +27,6 @@ interface Diagnosis {
   why: string;
   fix: string;
   frame_index?: number;
-  focus_points?: FocusPoint[];
 }
 
 interface DayPlan {
@@ -256,7 +250,6 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                         <div className="rounded-xl overflow-hidden border border-primary/30 mb-3">
                           <AnnotatedFrame
                             imageUrl={framesUrls[d.frame_index]}
-                            annotations={d.focus_points || []}
                             className="w-full h-auto"
                           />
                         </div>
