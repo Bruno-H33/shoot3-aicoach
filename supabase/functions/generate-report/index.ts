@@ -107,13 +107,7 @@ Réponds en JSON valide, sans markdown autour. Structure :
       "what": "string — Ce que tu as observé (2 phrases max, factuel)",
       "why": "string — Pourquoi c'est un problème (conséquence sur le tir, 2 phrases max)",
       "fix": "string — Comment corriger ça (conseil concret et simple, 2-3 phrases)",
-      "frame_index": "number — numéro de la frame (0-indexé) où l'erreur est la plus visible",
-      "focus_points": [
-        {
-          "focus_x": "number (0.0 à 1.0) — position horizontale relative du centre de la zone d'erreur",
-          "focus_y": "number (0.0 à 1.0) — position verticale relative du centre de la zone d'erreur"
-        }
-      ]
+      "frame_index": "number — numéro de la frame (0-indexé) où l'erreur est la plus visible. Tu DOIS TOUJOURS fournir cet index."
     }
   ],
   "exercises": [
@@ -149,8 +143,7 @@ RÈGLES :
 - Le plan hebdomadaire doit être réaliste pour un jeune compétiteur (pas plus de 30 min/jour).
 - Les exercices doivent être faisables seul, avec juste un ballon et un panier.
 - Tu tutoies TOUJOURS ${userName}.
-- FOCUS VISUEL : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible). Tu DOIS aussi fournir "focus_points" (un tableau avec au moins un objet contenant "focus_x" et "focus_y"). Ces valeurs sont des pourcentages relatifs entre 0.0 et 1.0 (où [0.0, 0.0] = coin haut-gauche et [1.0, 1.0] = coin bas-droite). Pointe sur le CENTRE APPROXIMATIF de la zone du corps du joueur concernée par l'erreur (ex: le coude, les pieds, le poignet). Ne cherche PAS à être ultra-précis au pixel près — vise la bonne zone générale du corps du joueur sur l'image.
-- IMPORTANT : Si tu détectes une erreur globale (posture générale, rythme, timing) et que tu ne peux PAS définir un point spatial précis sur le corps, il est autorisé de renvoyer "focus_points": [] (tableau vide). Mais tu DOIS TOUJOURS renvoyer "frame_index" avec l'index de la frame la plus pertinente pour illustrer le moment de l'erreur.`,
+- FOCUS VISUEL : Pour chaque diagnostic, tu DOIS fournir "frame_index" (le numéro 0-indexé de la frame où l'erreur est la plus visible). Ne fournis PAS de coordonnées spatiales (focus_x, focus_y) — le tracking visuel est géré automatiquement côté client par MediaPipe Pose. Concentre-toi uniquement sur le diagnostic textuel et le choix de la bonne frame.`,
           },
           {
             role: "user",
