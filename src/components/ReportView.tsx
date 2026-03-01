@@ -484,7 +484,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
               {/* Trust badge */}
               <div className="flex items-center justify-center gap-2 mt-6">
                 <Shield className="w-4 h-4 text-muted-foreground" />
-                <span className="font-body text-xs text-muted-foreground">Paiement 100% sécurisé via Stripe</span>
+                <span className="font-body text-xs text-muted-foreground">Paiement 100% sécurisé.</span>
               </div>
             </div>
           );
