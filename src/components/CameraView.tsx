@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, SwitchCamera, Play, Square } from "lucide-react";
+import { X, SwitchCamera, Play, Square, Smartphone, Sun, MapPin, Timer, ChevronRight } from "lucide-react";
 
 interface CameraViewProps {
   onComplete: (issues?: ShotIssue[], frames?: string[]) => void;
@@ -122,6 +122,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const [terminalProgress, setTerminalProgress] = useState(0);
   const [cameraError, setCameraError] = useState(false);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [showInstructions, setShowInstructions] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const analysisAbortRef = useRef<AbortController | null>(null);
@@ -353,7 +354,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const content = (
     <div className="fixed inset-0 z-[9999] flex flex-col bg-black overflow-hidden" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100dvh', margin: 0, padding: 0 }}>
       {!cameraError ? (
-        <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+        <video ref={videoRef} autoPlay playsInline muted className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${showInstructions ? 'blur-sm scale-105' : ''}`} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-black to-zinc-950" />
       )}
@@ -445,9 +446,9 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
           </div>
         )}
 
-        {/* Bottom controls */}
-        {phase !== "processing" && (
-          <div className="absolute bottom-6 landscape:bottom-2 left-0 right-0 flex items-center justify-center gap-10">
+        {/* Bottom controls — hidden during instructions */}
+        {phase !== "processing" && !showInstructions && (
+          <div className="absolute bottom-6 landscape:bottom-2 left-0 right-0 flex items-center justify-center gap-10 animate-fade-in">
             <button onClick={onClose} className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15">
               <X className="w-6 h-6 text-foreground" />
             </button>
@@ -466,6 +467,48 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
             <button onClick={handleFlipCamera} className="w-14 h-14 rounded-full glass flex items-center justify-center border border-white/15">
               <SwitchCamera className="w-6 h-6 text-foreground" />
             </button>
+          </div>
+        )}
+
+        {/* Instructions overlay */}
+        {showInstructions && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
+            <div className="glass rounded-3xl border border-primary/40 mx-5 max-w-md w-full p-6 space-y-6" style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.15)' }}>
+              {/* Title */}
+              <div className="text-center space-y-1">
+                <p className="font-sport text-3xl tracking-wider text-foreground">PRÉPARATION DU TEST</p>
+                <p className="font-body text-xs text-muted-foreground tracking-widest uppercase">Les 4 règles d'or</p>
+              </div>
+
+              {/* Rules */}
+              <div className="space-y-4">
+                {[
+                  { icon: <Smartphone className="w-5 h-5 text-primary" />, title: "Le Cadre", desc: "Pose ton téléphone de façon à voir le joueur de la tête aux pieds ET le panier." },
+                  { icon: <Sun className="w-5 h-5 text-primary" />, title: "La Lumière", desc: "Évite le contre-jour. Ne filme pas face au soleil." },
+                  { icon: <MapPin className="w-5 h-5 text-primary" />, title: "Le Repère", desc: "Prends une position de tir fixe devant le panier." },
+                  { icon: <Timer className="w-5 h-5 text-primary" />, title: "L'Action", desc: "Appuie sur Play et va te placer (tu auras 5 sec de mise en place)." },
+                ].map((rule) => (
+                  <div key={rule.title} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl glass border border-primary/30 flex items-center justify-center flex-shrink-0">
+                      {rule.icon}
+                    </div>
+                    <div>
+                      <p className="font-body text-sm font-bold text-foreground">{rule.title}</p>
+                      <p className="font-body text-xs text-muted-foreground leading-relaxed">{rule.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={() => setShowInstructions(false)}
+                className="btn-primary w-full py-4 rounded-2xl font-sport text-lg tracking-widest uppercase flex items-center justify-center gap-2"
+              >
+                J'AI COMPRIS
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         )}
       </div>
