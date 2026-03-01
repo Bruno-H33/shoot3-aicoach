@@ -129,6 +129,9 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   const isSpeakingRef = useRef(false);
   const ttsUrlsRef = useRef<string[]>([]);
   const keyFramesRef = useRef<string[]>([]);
+  const liveCorrectionsCountRef = useRef(0);
+  const guaranteedFiredRef = useRef(false);
+  const timeLeftRef = useRef(RECORDING_TIME);
 
   // Pre-fetch static voice lines (go + done)
   const goCacheRef = useRef<string | null>(null);
@@ -189,20 +192,28 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     isSpeakingRef.current = false;
   }, []);
 
-  // --- Periodic AI analysis during recording ---
+  // --- Periodic AI analysis during recording (with time control) ---
   useEffect(() => {
     if (phase !== "recording") return;
 
+    // Reset counters at start of recording
+    liveCorrectionsCountRef.current = 0;
+    guaranteedFiredRef.current = false;
+
     const analyze = async () => {
       if (!videoRef.current) return;
-      const frame = captureFrame(videoRef.current, 0.6, false);
-      if (!frame) return;
 
-      // Save key frames in full HD for the report (max 10)
+      // Save key frames in full HD for the report (max 10) regardless of time window
       if (keyFramesRef.current.length < 10) {
         const hdFrame = captureFrame(videoRef.current, 0.8, true);
         if (hdFrame) keyFramesRef.current.push(hdFrame);
       }
+
+      // RULE: Max 2 live corrections per session
+      if (liveCorrectionsCountRef.current >= 2) return;
+
+      const frame = captureFrame(videoRef.current, 0.6, false);
+      if (!frame) return;
 
       try {
         const controller = new AbortController();
@@ -224,13 +235,21 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         const data = await res.json();
 
         if (data.issues && data.issues.length > 0) {
+          // RULE: Block audio playback if timeLeft <= 5
+          if (liveCorrectionsCountRef.current >= 2) return;
+
           setLiveIssues(data.issues);
-          // Speak the most severe issue
           const sorted = [...data.issues].sort((a, b) => {
             const sev = { high: 3, medium: 2, low: 1 };
             return sev[b.severity] - sev[a.severity];
           });
-          speakFeedback(sorted[0].feedback_fr);
+
+          // Only speak if within the 29s-5s window
+          const currentTimeLeft = timeLeftRef.current;
+          if (currentTimeLeft > 5 && currentTimeLeft <= 29) {
+            speakFeedback(sorted[0].feedback_fr);
+            liveCorrectionsCountRef.current += 1;
+          }
         } else if (data.overall_score >= 0) {
           setLiveIssues([]);
         }
@@ -271,15 +290,27 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
   // Recording timer
   useEffect(() => {
     if (phase !== "recording") return;
+    timeLeftRef.current = timeLeft;
+
     if (timeLeft <= 0) {
       if (doneCacheRef.current) playAudioUrl(doneCacheRef.current);
       setPhase("processing");
       setTerminalProgress(0);
       return;
     }
+
+    // GUARANTEED MINIMUM: If at 10s remaining and 0 corrections, fire a fallback
+    if (timeLeft === 10 && liveCorrectionsCountRef.current === 0 && !guaranteedFiredRef.current) {
+      guaranteedFiredRef.current = true;
+      const fallbackPhrase = "Plie plus tes genoux !";
+      setLiveIssues([{ key: "stiff_legs", label: "Jambes raides", severity: "medium", feedback_fr: fallbackPhrase }]);
+      speakFeedback(fallbackPhrase);
+      liveCorrectionsCountRef.current += 1;
+    }
+
     const t = setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => clearTimeout(t);
-  }, [phase, timeLeft]);
+  }, [phase, timeLeft, speakFeedback]);
 
   // Terminal animation + final diagnostic analysis
   useEffect(() => {
