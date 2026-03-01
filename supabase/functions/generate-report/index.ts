@@ -99,12 +99,23 @@ Tu as l'INTERDICTION STRICTE de diagnostiquer une erreur biomécanique si tu ne 
 === RÈGLE ABSOLUE N°4 : SYNCHRONISATION STRICTE DU frame_index ===
 Pour chaque erreur dans "diagnosis", la valeur "frame_index" DOIT être l'image exacte illustrant L'APOGÉE de l'erreur :
 - Erreur sur le "Dip" (abaissement du ballon) → frame_index = image montrant le joueur au point le plus bas de sa flexion, ballon en bas.
-- Erreur sur le "Set Point" (point d'armé) → frame_index = image montrant le ballon au-dessus ou au niveau de la tête, juste avant le lâcher.
+- Erreur sur le "Set Point" / "Armé" → frame_index = image montrant le ballon au-dessus ou au niveau de la tête, juste AVANT le lâcher.
+- Erreur sur le "Coude" (chicken wing, elbow angle) → frame_index = image montrant le coude au moment de l'armé ou de l'extension, PAS une frame de préparation.
 - Erreur sur le "Follow-through" (fouetté du poignet) → frame_index = image montrant le ballon ayant quitté la main, bras tendu.
 - Erreur sur le "Guide Hand" → frame_index = image montrant la main de guide au moment du lâcher.
 - Erreur sur les appuis/pieds → frame_index = image montrant clairement les pieds au sol.
 
 ⚠️ SI L'IMAGE CORRESPONDANTE N'EXISTE PAS dans la séquence fournie → SUPPRIME CETTE ERREUR de ton rapport. Aucune exception.
+
+=== RÈGLE ABSOLUE N°5 : ANTI-INVERSION DES FRAMES ===
+⚠️ ERREUR CRITIQUE À ÉVITER : Ne confonds JAMAIS les frames entre deux diagnostics différents.
+PROCÉDURE OBLIGATOIRE avant de rédiger ton JSON :
+1. Pour CHAQUE diagnostic, examine TOUTES les frames une par une (de 0 à ${(analysis.frames_urls?.length || 1) - 1}).
+2. Choisis la frame qui montre LE MIEUX l'erreur spécifique de CE diagnostic, pas une autre erreur.
+3. Vérifie que la frame choisie correspond bien au TITRE du diagnostic :
+   - Si le titre parle de "Coude ouvert" → la frame doit montrer le COUDE clairement, pas les pieds ou le dip.
+   - Si le titre parle d'"Armé bas" → la frame doit montrer le ballon en position basse lors de l'armé, pas le coude.
+4. RELIS chaque paire (titre ↔ frame_index) AVANT de finaliser. Si deux diagnostics ont le même frame_index, vérifie que c'est justifié (rare). Sinon, corrige.
 
 Pour chaque diagnostic, tu DOIS ajouter un champ "justification_image" expliquant pourquoi tu as choisi cette frame :
 Exemple : "J'ai choisi la frame 4 car on y voit clairement le coude plié à ~112° au moment exact de l'armé."
