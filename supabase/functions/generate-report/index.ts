@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Not authenticated");
 
-    const { analysisId } = await req.json();
+    const { analysisId, user_position, user_goal } = await req.json();
     if (!analysisId) throw new Error("Missing analysisId");
 
     // Fetch the analysis
@@ -146,8 +146,14 @@ Réponds en JSON valide, SANS markdown autour (pas de \`\`\`json). Structure STR
       { "day": "Dimanche", "focus": "Repos", "exercises": [] }
     ]
   },
-  "motivation": "string — 5-6 phrases EXACTEMENT (valorisation + leçon philosophique + question d'impact)"
+  "motivation": "string — 5-6 phrases EXACTEMENT (voir instructions ci-dessous)"
 }
+
+INSTRUCTIONS SPÉCIALES POUR "motivation" (mot du coach) :
+Rédige 4 ou 5 lignes inspirantes (approche philosophique/mentale) pour clore le rapport.
+TRÈS IMPORTANT : Tu dois impérativement personnaliser ce discours en prenant en compte que ce joueur joue au poste de '${user_position || "non précisé"}' et que son objectif principal actuel est '${user_goal || "non précisé"}'.
+Fais le lien entre son erreur biomécanique, son poste et son objectif pour le motiver.
+Termine TOUJOURS par une question de réflexion.
 
 RÈGLES FINALES :
 - POINTS FORTS : 2 à 4 points forts RÉELS. Chaque detail doit expliquer l'avantage biomécanique.

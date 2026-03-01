@@ -210,7 +210,12 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ frames: [frame], context: "live" }),
+          body: JSON.stringify({
+            frames: [frame],
+            context: "live",
+            user_position: localStorage.getItem("s3_user_position") || "",
+            user_goal: localStorage.getItem("s3_user_goal") || "",
+          }),
           signal: controller.signal,
         });
 
@@ -289,7 +294,12 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ frames, context: "diagnostic" }),
+          body: JSON.stringify({
+            frames,
+            context: "diagnostic",
+            user_position: localStorage.getItem("s3_user_position") || "",
+            user_goal: localStorage.getItem("s3_user_goal") || "",
+          }),
         });
         if (res.ok) {
           const data = await res.json();

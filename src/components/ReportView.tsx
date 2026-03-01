@@ -83,7 +83,11 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
         }
 
         const { data, error: fnError } = await supabase.functions.invoke("generate-report", {
-          body: { analysisId },
+          body: {
+            analysisId,
+            user_position: localStorage.getItem("s3_user_position") || "",
+            user_goal: localStorage.getItem("s3_user_goal") || "",
+          },
         });
         if (fnError) throw fnError;
         if (data?.report) setReport(data.report);

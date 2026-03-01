@@ -72,7 +72,9 @@ const Index = () => {
   // If user is already authenticated, skip to dashboard
   useEffect(() => {
     if (!loading && user && view === "splash" && !searchParams.get("payment")) {
-      const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      // Prioritize localStorage pseudo over OAuth name
+      const savedPseudo = localStorage.getItem("s3_user_pseudo");
+      const name = savedPseudo || user.user_metadata?.full_name || user.user_metadata?.name || "";
       if (name) setUserName(name);
       
       const pendingFlow = sessionStorage.getItem("s3_pending_auth_flow");
@@ -93,9 +95,11 @@ const Index = () => {
           });
         }
 
-        if (pending.onboardingData) {
+      if (pending.onboardingData) {
+          // Always prioritize the pseudo from onboarding over OAuth name
+          const pseudoName = localStorage.getItem("s3_user_pseudo") || pending.userName || name;
           supabase.from("profiles").update({
-            display_name: pending.userName || name,
+            display_name: pseudoName,
             position: pending.onboardingData.position,
             objective: pending.onboardingData.objective,
           }).eq("user_id", user.id);
@@ -112,8 +116,10 @@ const Index = () => {
       sessionStorage.removeItem("s3_pending_auth_flow");
       const saveProfile = async () => {
         if (onboardingData) {
+          // Prioritize localStorage pseudo over OAuth name
+          const pseudoName = localStorage.getItem("s3_user_pseudo") || userName;
           await supabase.from("profiles").update({
-            display_name: userName,
+            display_name: pseudoName,
             position: onboardingData.position,
             objective: onboardingData.objective,
           }).eq("user_id", user.id);
@@ -269,7 +275,7 @@ const Index = () => {
     setActiveTab("studio");
   };
 
-  const displayName = userName || user?.user_metadata?.full_name || user?.user_metadata?.name || "Joueur";
+  const displayName = localStorage.getItem("s3_user_pseudo") || userName || user?.user_metadata?.full_name || user?.user_metadata?.name || "Joueur";
 
   return (
     <div className="min-h-dvh bg-black flex justify-center">

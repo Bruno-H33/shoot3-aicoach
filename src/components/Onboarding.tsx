@@ -28,6 +28,12 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
   const handleNext = () => {
     if (step === 3) {
       if (!name.trim()) return;
+      // Persist onboarding data to localStorage
+      const posLabel = postes.find(p => p.id === selectedPoste)?.label || selectedPoste || "";
+      const objLabel = objectifs.find(o => o.id === selectedObjectif)?.label || selectedObjectif || "";
+      localStorage.setItem("s3_user_pseudo", name.trim());
+      localStorage.setItem("s3_user_position", posLabel);
+      localStorage.setItem("s3_user_goal", objLabel);
       setIsLoading(true);
       let p = 0;
       const interval = setInterval(() => {
