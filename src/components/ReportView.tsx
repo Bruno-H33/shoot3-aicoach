@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle } from "lucide-react";
+import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle, Crown, Zap, Users, Shield, Award, Check } from "lucide-react";
 import AnnotatedFrame from "@/components/AnnotatedFrame";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -365,6 +365,130 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
             </p>
           </div>
         </div>
+
+        {/* CTA Monetization Section */}
+        {(() => {
+          const userGoal = localStorage.getItem("s3_user_goal") || "progresser";
+
+          const handleCheckout = async (plan: "team" | "elite") => {
+            const priceMap = { team: "pass_team", elite: "sniper_elite" };
+            try {
+              const { data, error: fnErr } = await supabase.functions.invoke("create-checkout", {
+                body: { plan: priceMap[plan] },
+              });
+              if (fnErr) throw fnErr;
+              if (data?.url) window.location.href = data.url;
+            } catch (e) {
+              console.error("Checkout error:", e);
+            }
+          };
+
+          return (
+            <div className="px-5 mb-10">
+              {/* Section Title */}
+              <div className="text-center mb-8 pt-4">
+                <h2 className="font-sport text-2xl text-foreground uppercase tracking-wider mb-2">
+                  Prêt à atteindre ton objectif de {userGoal} ?
+                </h2>
+                <p className="font-body text-sm text-muted-foreground">
+                  Choisis ton plan d'entraînement pour corriger ces défauts dès aujourd'hui.
+                </p>
+              </div>
+
+              {/* Offer Cards */}
+              <div className="space-y-4">
+                {/* Card A: Pass Team */}
+                <div
+                  className="rounded-2xl p-5 border border-white/10 transition-all active:scale-[0.98]"
+                  style={{ background: "rgba(10,10,10,0.9)" }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-5 h-5 text-blue-400" />
+                    <h3 className="font-sport text-xl text-foreground tracking-wider">PASS TEAM</h3>
+                  </div>
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className="font-sport text-3xl text-foreground">19.99€</span>
+                    <span className="font-body text-sm text-muted-foreground">/ mois</span>
+                    <span className="font-body text-xs text-muted-foreground ml-1">(sans engagement)</span>
+                  </div>
+                  <div className="space-y-2.5 mb-5">
+                    {[
+                      "1 Analyse IA par semaine",
+                      "Challenges & Classements (Ligue)",
+                      "Communauté active (Vestiaire)",
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <Check className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                        <span className="font-body text-sm text-foreground/80">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handleCheckout("team")}
+                    className="w-full py-3 rounded-xl border border-white/20 font-sport text-sm text-foreground tracking-widest uppercase hover:bg-white/5 active:scale-95 transition-all"
+                  >
+                    Rejoindre la Team
+                  </button>
+                </div>
+
+                {/* Card B: Sniper Elite */}
+                <div
+                  className="rounded-2xl p-5 border border-primary/40 relative overflow-hidden transition-all active:scale-[0.98]"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(45,18,4,0.95), rgba(10,10,10,0.95))",
+                    boxShadow: "0 0 25px rgba(255,77,0,0.15), 0 0 50px rgba(255,77,0,0.05)",
+                  }}
+                >
+                  {/* Recommended Badge */}
+                  <div className="absolute top-4 right-4">
+                    <div className="flex items-center gap-1 bg-primary/20 border border-primary/40 rounded-full px-2.5 py-1">
+                      <Award className="w-3 h-3 text-primary" />
+                      <span className="font-body text-[10px] text-primary font-bold tracking-wider uppercase">Recommandé par l'IA</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-1">
+                    <Crown className="w-5 h-5 text-primary" />
+                    <h3 className="font-sport text-xl text-primary tracking-wider">SNIPER ELITE</h3>
+                  </div>
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className="font-sport text-3xl text-foreground">49.99€</span>
+                    <span className="font-body text-sm text-muted-foreground">paiement unique</span>
+                  </div>
+                  <div className="space-y-2.5 mb-5">
+                    {[
+                      "Bootcamp sur-mesure de 90 jours",
+                      "12 Check-ups Biomécaniques IA",
+                      "Obtention du Shoot3 ID Certifié",
+                      "Inclus : Tous les avantages Pass Team",
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="font-body text-sm text-foreground/80">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handleCheckout("elite")}
+                    className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-sport text-sm tracking-widest uppercase active:scale-95 transition-all animate-pulse hover:animate-none"
+                    style={{ boxShadow: "0 0 20px rgba(255,77,0,0.4)" }}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      Démarrer mon Programme Elite
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Trust badge */}
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <Shield className="w-4 h-4 text-muted-foreground" />
+                <span className="font-body text-xs text-muted-foreground">Paiement 100% sécurisé via Stripe</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
