@@ -49,9 +49,16 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("AI not configured");
 
+    // Fetch display_name from profiles (pseudo chosen during onboarding)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", userData.user.id)
+      .single();
+
     const issues = analysis.issues as any[];
     const score = analysis.overall_score;
-    const userName = userData.user.user_metadata?.full_name || userData.user.user_metadata?.name || "Joueur";
+    const userName = profile?.display_name || userData.user.user_metadata?.full_name || userData.user.user_metadata?.name || "Joueur";
 
     const issuesSummary = issues.length > 0
       ? issues.map((i: any) => `- ${i.label} (${i.severity}): ${i.feedback_fr}`).join("\n")
