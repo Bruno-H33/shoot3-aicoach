@@ -36,22 +36,42 @@ const ScoreCard = ({ playerName, score, scoreLabel, bestFrameUrl }: ScoreCardPro
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1080, 1920);
 
-        // Logo text
+        // Draw logo image
+        try {
+          const logo = new Image();
+          logo.crossOrigin = "anonymous";
+          await new Promise<void>((resolve, reject) => {
+            logo.onload = () => resolve();
+            logo.onerror = () => reject();
+            logo.src = "/images/logo-s3.png";
+          });
+          const logoSize = 160;
+          ctx.drawImage(logo, (1080 - logoSize) / 2, 40, logoSize, logoSize);
+        } catch {
+          // Fallback: draw text if logo fails
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 72px 'Bebas Neue', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("SHOOT3", 540, 140);
+        }
+
+        // "SHOOT3" title below logo
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 72px 'Bebas Neue', sans-serif";
+        ctx.font = "bold 64px 'Bebas Neue', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("SHOOT3", 540, 140);
+        ctx.fillText("SHOOT3", 540, 260);
 
         // Subtitle
         ctx.fillStyle = "rgba(255,255,255,0.5)";
         ctx.font = "28px 'Inter', sans-serif";
-        ctx.letterSpacing = "8px";
-        ctx.fillText("ÉVALUATION IA", 540, 190);
+        ctx.fillText("ÉVALUATION IA", 540, 310);
 
         // Player name
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 56px 'Bebas Neue', sans-serif";
-        ctx.fillText(playerName.toUpperCase(), 540, 300);
+        ctx.fillText(playerName.toUpperCase(), 540, 400);
+
+        const frameY = 460;
 
         // Draw frame image if available
         if (bestFrameUrl) {
@@ -70,7 +90,7 @@ const ScoreCard = ({ playerName, score, scoreLabel, bestFrameUrl }: ScoreCardPro
             const w = img.width * ratio;
             const h = img.height * ratio;
             const x = (1080 - w) / 2;
-            const y = 380;
+            const y = frameY;
 
             // Rounded rect clip
             ctx.save();
