@@ -161,7 +161,47 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
             </button>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { window.print(); }}
+                onClick={async () => {
+                  try {
+                    const content = document.querySelector('.mobile-container') as HTMLElement;
+                    if (!content) throw new Error("No content");
+
+                    const prevExpanded = expandedDiag;
+                    content.classList.add('pdf-export-mode');
+                    setExpandedDiag(-1);
+                    await new Promise(r => setTimeout(r, 300));
+
+                    const pdfBlob: Blob = await html2pdf()
+                      .set({
+                        margin: [5, 5, 5, 5],
+                        filename: `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+                        image: { type: 'jpeg', quality: 0.85 },
+                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0a0a', ignoreElements: (el: Element) => el.hasAttribute('data-html2canvas-ignore') },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+                      })
+                      .from(content)
+                      .outputPdf('blob');
+
+                    content.classList.remove('pdf-export-mode');
+                    setExpandedDiag(prevExpanded);
+
+                    // Force download
+                    const url = URL.createObjectURL(pdfBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  } catch (e: any) {
+                    const cont = document.querySelector('.mobile-container');
+                    if (cont) cont.classList.remove('pdf-export-mode');
+                    setExpandedDiag(0);
+                    if (e?.name !== 'AbortError') console.error("PDF download error:", e);
+                  }
+                }}
                 className="flex items-center gap-2 border border-white/20 text-foreground px-3 py-2 rounded-xl font-body text-xs font-semibold tracking-wider active:scale-95 transition-all hover:bg-white/5"
               >
                 <Download className="w-4 h-4" />
