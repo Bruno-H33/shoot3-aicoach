@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import html2pdf from "html2pdf.js";
 import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle, Crown, Zap, Users, Shield, Award, Check } from "lucide-react";
 import AnnotatedFrame from "@/components/AnnotatedFrame";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,13 +159,18 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
               <button
                 onClick={async () => {
                   try {
-                    // Generate PDF blob via print-to-pdf workaround: use a hidden iframe or canvas
-                    // For now, create a simple text/html blob as a shareable file
-                    const pdfBlob = await new Promise<Blob>((resolve) => {
-                      const content = document.querySelector('.mobile-container');
-                      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilan Shoot3 - ${report.player_name}</title><style>body{font-family:sans-serif;background:#0a0a0a;color:#fff;padding:20px;}</style></head><body>${content?.innerHTML || ''}</body></html>`;
-                      resolve(new Blob([html], { type: 'application/pdf' }));
-                    });
+                    const content = document.querySelector('.mobile-container');
+                    if (!content) throw new Error("No content");
+                    const pdfBlob: Blob = await html2pdf()
+                      .set({
+                        margin: [5, 5, 5, 5],
+                        filename: `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+                        image: { type: 'jpeg', quality: 0.85 },
+                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0a0a' },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                      })
+                      .from(content)
+                      .outputPdf('blob');
                     const file = new File([pdfBlob], `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`, { type: 'application/pdf' });
 
                     const shareData: ShareData = {
