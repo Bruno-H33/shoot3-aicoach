@@ -147,15 +147,55 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
               <ArrowLeft className="w-5 h-5" />
               <span className="font-body text-sm">Retour</span>
             </button>
-            <button
-              onClick={() => {
-                window.print();
-              }}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-body text-xs font-semibold tracking-wider active:scale-95 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              PDF
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { window.print(); }}
+                className="flex items-center gap-2 border border-white/20 text-foreground px-3 py-2 rounded-xl font-body text-xs font-semibold tracking-wider active:scale-95 transition-all hover:bg-white/5"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    // Generate PDF blob via print-to-pdf workaround: use a hidden iframe or canvas
+                    // For now, create a simple text/html blob as a shareable file
+                    const pdfBlob = await new Promise<Blob>((resolve) => {
+                      const content = document.querySelector('.mobile-container');
+                      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilan Shoot3 - ${report.player_name}</title><style>body{font-family:sans-serif;background:#0a0a0a;color:#fff;padding:20px;}</style></head><body>${content?.innerHTML || ''}</body></html>`;
+                      resolve(new Blob([html], { type: 'application/pdf' }));
+                    });
+                    const file = new File([pdfBlob], `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`, { type: 'application/pdf' });
+
+                    const shareData: ShareData = {
+                      title: `Bilan Shoot3 - ${report.player_name}`,
+                      text: "🚨 L'IA a analysé la mécanique de mon shoot ! Regarde mes défauts dans le PDF. Teste ton propre tir sur https://shoot3-aicoach.lovable.app 🏀",
+                      files: [file],
+                    };
+
+                    if (navigator.canShare && navigator.canShare(shareData)) {
+                      await navigator.share(shareData);
+                    } else if (navigator.share) {
+                      // Fallback: share without file
+                      await navigator.share({ title: shareData.title, text: shareData.text, url: "https://shoot3-aicoach.lovable.app" });
+                    } else {
+                      // No share API: fallback to download
+                      window.print();
+                    }
+                  } catch (e: any) {
+                    if (e.name !== 'AbortError') {
+                      console.error("Share error:", e);
+                      window.print();
+                    }
+                  }
+                }}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-2 rounded-xl font-body text-xs font-semibold tracking-wider active:scale-95 transition-all"
+                style={{ boxShadow: "0 0 12px rgba(255,77,0,0.3)" }}
+              >
+                <span>📲</span>
+                Partager
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 mb-1">
