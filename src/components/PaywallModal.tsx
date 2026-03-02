@@ -167,31 +167,37 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
               </div>
             </div>
 
-            {/* Fake PDF content */}
-            <div className="px-5 py-4 space-y-3">
-              <p className="font-body text-sm text-foreground/70 leading-relaxed">
-                Ton analyse révèle {issues.length > 0 ? `${issues.length} axe${issues.length > 1 ? "s" : ""} d'amélioration` : "des axes d'amélioration"} sur ta mécanique de tir. Voici ton diagnostic complet avec les corrections personnalisées…
+            {/* Teaser phrase — above blur */}
+            <div className="px-5 pt-4 pb-2">
+              <p className="font-body text-sm text-foreground/80 leading-relaxed">
+                « Ton analyse révèle {issues.length > 0 ? `${issues.length} axe${issues.length > 1 ? "s" : ""} d'amélioration` : "des axes d'amélioration"} sur ta mécanique de tir. Voici ton diagnostic complet avec les corrections personnalisées… »
               </p>
-              <div className="h-3 w-full rounded bg-white/10" />
-              <div className="h-3 w-5/6 rounded bg-white/10" />
-              <div className="h-8 w-1/2 rounded bg-primary/10 mt-2" />
-              <div className="h-3 w-full rounded bg-white/10" />
-              <div className="h-3 w-4/5 rounded bg-white/10" />
-              <div className="h-3 w-2/3 rounded bg-white/10" />
             </div>
 
-            {/* Gradient blur overlay */}
-            <div className="absolute inset-x-0 bottom-0 h-[80%] flex items-center justify-center"
-              style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(5,5,5,0.7) 30%, rgba(5,5,5,0.95) 100%)", backdropFilter: "blur(4px)" }}
-            >
-              <button
-                onClick={handleBuyReport}
-                disabled={buyLoading}
-                className="px-6 py-3 rounded-2xl bg-primary/20 border border-primary/40 font-sport text-base text-primary tracking-widest uppercase flex items-center gap-2 hover:bg-primary/30 transition-colors"
+            {/* Fake blurred PDF content */}
+            <div className="relative">
+              <div className="px-5 py-3 space-y-3">
+                <div className="h-3 w-full rounded bg-white/10" />
+                <div className="h-3 w-5/6 rounded bg-white/10" />
+                <div className="h-8 w-1/2 rounded bg-primary/10 mt-2" />
+                <div className="h-3 w-full rounded bg-white/10" />
+                <div className="h-3 w-4/5 rounded bg-white/10" />
+                <div className="h-3 w-2/3 rounded bg-white/10" />
+              </div>
+
+              {/* Gradient blur overlay */}
+              <div className="absolute inset-0 flex items-center justify-center"
+                style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(5,5,5,0.7) 30%, rgba(5,5,5,0.95) 100%)", backdropFilter: "blur(4px)" }}
               >
-                <Lock className="w-4 h-4" />
-                DÉVERROUILLER
-              </button>
+                <button
+                  onClick={handleBuyReport}
+                  disabled={buyLoading}
+                  className="px-6 py-3 rounded-2xl bg-primary/20 border border-primary/40 font-sport text-base text-primary tracking-widest uppercase flex items-center gap-2 hover:bg-primary/30 transition-colors"
+                >
+                  <Lock className="w-4 h-4" />
+                  DÉVERROUILLER
+                </button>
+              </div>
             </div>
           </div>
         </div>
