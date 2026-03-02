@@ -233,6 +233,42 @@
   .landscape\:right-\[20\%\] { right: 20% !important; }
 }
 
+/* PDF export mode — applied temporarily during html2pdf capture */
+.pdf-export-mode {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-width: 100% !important;
+}
+
+.pdf-export-mode * {
+  position: relative !important;
+}
+
+.pdf-export-mode .absolute,
+.pdf-export-mode [class*="absolute"] {
+  position: relative !important;
+}
+
+.pdf-export-mode .flex-1 {
+  overflow: visible !important;
+}
+
+.pdf-export-mode .rounded-2xl,
+.pdf-export-mode .rounded-xl {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pdf-export-mode .no-print {
+  display: none !important;
+}
+
+.pdf-export-mode .animate-fade-in-up {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
 /* Print styles for PDF export */
 @media print {
   body {
