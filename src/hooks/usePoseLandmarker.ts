@@ -3,7 +3,7 @@ import { useRef, useCallback, useEffect } from "react";
 let cachedLandmarker: any = null;
 let loadingPromise: Promise<any> | null = null;
 
-const POSE_CONNECTIONS: [number, number][] = [
+export const POSE_CONNECTIONS: [number, number][] = [
   // Torso
   [11, 12], // shoulders
   [11, 23], [12, 24], // shoulders to hips
@@ -19,14 +19,14 @@ const POSE_CONNECTIONS: [number, number][] = [
 ];
 
 // Major joint indices (shoulders, elbows, wrists, hips, knees, ankles)
-const MAJOR_JOINTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+export const MAJOR_JOINTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
 
-const STROKE_COLOR = "#FF4D00";
-const GLOW_COLOR = "#FF4D00";
-const LINE_WIDTH = 3;
-const JOINT_RADIUS = 4;
+export const STROKE_COLOR = "#FF4D00";
+export const GLOW_COLOR = "#FF4D00";
+export const LINE_WIDTH = 3;
+export const JOINT_RADIUS = 4;
 
-async function loadLandmarker() {
+export async function loadLandmarker() {
   if (cachedLandmarker) return cachedLandmarker;
   if (loadingPromise) return loadingPromise;
 

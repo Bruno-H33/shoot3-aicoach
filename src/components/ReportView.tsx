@@ -4,6 +4,7 @@ import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, C
 import AnnotatedFrame from "@/components/AnnotatedFrame";
 import ScoreCard from "@/components/ScoreCard";
 import { supabase } from "@/integrations/supabase/client";
+import { loadLandmarker } from "@/hooks/usePoseLandmarker";
 
 interface ReportViewProps {
   analysisId: string;
@@ -53,6 +54,7 @@ interface Report {
 const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
   const [report, setReport] = useState<Report | null>(null);
   const [framesUrls, setFramesUrls] = useState<string[]>([]);
+  const [bestFrameUrl, setBestFrameUrl] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDiag, setExpandedDiag] = useState<number | null>(0);
@@ -103,6 +105,56 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
     };
     fetchReport();
   }, [analysisId]);
+
+  // Find the apex frame (follow-through: wrists at highest Y position)
+  useEffect(() => {
+    if (framesUrls.length === 0) return;
+    let cancelled = false;
+
+    const findApexFrame = async () => {
+      try {
+        const landmarker = await loadLandmarker();
+        let bestUrl = framesUrls[0];
+        let lowestWristY = Infinity; // lower Y = higher on screen
+
+        for (const url of framesUrls) {
+          try {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = () => reject();
+              img.src = url;
+            });
+            const result = landmarker.detect(img);
+            if (result.landmarks && result.landmarks.length > 0) {
+              const lms = result.landmarks[0];
+              // Wrist landmarks: 15 (left), 16 (right)
+              const leftWrist = lms[15];
+              const rightWrist = lms[16];
+              const minY = Math.min(
+                (leftWrist?.visibility ?? 0) > 0.3 ? leftWrist.y : Infinity,
+                (rightWrist?.visibility ?? 0) > 0.3 ? rightWrist.y : Infinity
+              );
+              if (minY < lowestWristY) {
+                lowestWristY = minY;
+                bestUrl = url;
+              }
+            }
+          } catch {
+            // Skip this frame
+          }
+        }
+
+        if (!cancelled) setBestFrameUrl(bestUrl);
+      } catch {
+        if (!cancelled) setBestFrameUrl(framesUrls[0]);
+      }
+    };
+
+    findApexFrame();
+    return () => { cancelled = true; };
+  }, [framesUrls]);
 
   const scoreColor = (score: number) => {
     if (score >= 80) return "text-green-400";
@@ -277,7 +329,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                 playerName={report.player_name}
                 score={report.score}
                 scoreLabel={report.score_label}
-                bestFrameUrl={framesUrls.length > 0 ? framesUrls[0] : undefined}
+                bestFrameUrl={bestFrameUrl}
               />
             </div>
           </div>
