@@ -170,18 +170,34 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
               <button
                 onClick={async () => {
                   try {
-                    const content = document.querySelector('.mobile-container');
+                    const content = document.querySelector('.mobile-container') as HTMLElement;
                     if (!content) throw new Error("No content");
+
+                    // Expand all diagnosis sections for PDF
+                    const prevExpanded = expandedDiag;
+                    
+                    
+                    // Add print-friendly class
+                    content.classList.add('pdf-export-mode');
+                    // Force expand all diagnoses by setting state and waiting for render
+                    setExpandedDiag(-1); // trigger to expand all via a special value
+                    await new Promise(r => setTimeout(r, 300));
+
                     const pdfBlob: Blob = await html2pdf()
                       .set({
                         margin: [5, 5, 5, 5],
                         filename: `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`,
                         image: { type: 'jpeg', quality: 0.85 },
-                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0a0a' },
+                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0a0a', ignoreElements: (el: Element) => el.hasAttribute('data-html2canvas-ignore') },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
                       })
                       .from(content)
                       .outputPdf('blob');
+
+                    // Restore state
+                    content.classList.remove('pdf-export-mode');
+                    setExpandedDiag(prevExpanded);
                     const file = new File([pdfBlob], `bilan-shoot3-${report.player_name.toLowerCase().replace(/\s+/g, '-')}.pdf`, { type: 'application/pdf' });
 
                     const shareData: ShareData = {
@@ -200,6 +216,10 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                       window.print();
                     }
                   } catch (e: any) {
+                    // Restore state on error
+                    const cont = document.querySelector('.mobile-container');
+                    if (cont) cont.classList.remove('pdf-export-mode');
+                    setExpandedDiag(0);
                     if (e.name !== 'AbortError') {
                       console.error("Share error:", e);
                       window.print();
@@ -305,9 +325,10 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
               {report.diagnosis.map((d, i) => (
                 <button
                   key={i}
+                  data-diag-index={i}
                   onClick={() => setExpandedDiag(expandedDiag === i ? null : i)}
-                  className="w-full text-left rounded-2xl p-4 border border-white/10 transition-all"
-                  style={{ background: "rgba(10,10,10,0.9)" }}
+                  className="w-full text-left rounded-2xl p-4 border border-white/10 transition-all break-inside-avoid"
+                  style={{ background: "rgba(10,10,10,0.9)", pageBreakInside: "avoid" }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -318,7 +339,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                     </div>
                     {expandedDiag === i ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
-                  {expandedDiag === i && (
+                  {(expandedDiag === i || expandedDiag === -1) && (
                     <div className="mt-4 space-y-3 animate-fade-in-up">
                       {/* Frame — always shown if available */}
                       {d.frame_index !== undefined && framesUrls[d.frame_index] && (
@@ -423,7 +444,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
           </div>
         </div>
 
-        {/* CTA Monetization Section */}
+        {/* CTA Monetization Section — excluded from PDF */}
         {(() => {
           const userGoal = localStorage.getItem("s3_user_goal") || "progresser";
 
@@ -441,7 +462,7 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
           };
 
           return (
-            <div className="px-5 mb-10">
+            <div className="px-5 mb-10" data-html2canvas-ignore="true">
               {/* Section Title */}
               <div className="text-center mb-8 pt-4">
                 <h2 className="font-sport text-2xl text-foreground uppercase tracking-wider mb-2">
