@@ -228,18 +228,11 @@ const Index = () => {
     setAnalysisResult(result);
     
     if (user) {
-      // Decrement credits
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
-      if (profile && profile.credits > 0) {
-        await supabase
-          .from("profiles")
-          .update({ credits: profile.credits - 1 })
-          .eq("user_id", user.id);
-        setCredits(profile.credits - 1);
+      const { data, error } = await supabase.rpc('decrement_user_credits', {
+        p_user_id: user.id,
+      });
+      if (data && data.length > 0 && data[0].success) {
+        setCredits(data[0].remaining_credits);
       }
 
       saveAnalysis(result, user.id, frames).then((id) => {
