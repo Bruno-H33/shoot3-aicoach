@@ -169,13 +169,14 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
 
             {/* Fake PDF content */}
             <div className="px-5 py-4 space-y-3">
-              <div className="h-3 w-3/4 rounded bg-white/10" />
+              <p className="font-body text-sm text-foreground/70 leading-relaxed">
+                Ton analyse révèle {issues.length > 0 ? `${issues.length} axe${issues.length > 1 ? "s" : ""} d'amélioration` : "des axes d'amélioration"} sur ta mécanique de tir. Voici ton diagnostic complet avec les corrections personnalisées…
+              </p>
               <div className="h-3 w-full rounded bg-white/10" />
               <div className="h-3 w-5/6 rounded bg-white/10" />
-              <div className="h-8 w-1/2 rounded bg-primary/10 mt-4" />
+              <div className="h-8 w-1/2 rounded bg-primary/10 mt-2" />
               <div className="h-3 w-full rounded bg-white/10" />
               <div className="h-3 w-4/5 rounded bg-white/10" />
-              <div className="h-3 w-full rounded bg-white/10" />
               <div className="h-3 w-2/3 rounded bg-white/10" />
             </div>
 
