@@ -21,6 +21,28 @@ const COUNTDOWN = 3;
 const RECORDING_TIME = 30;
 const ANALYSIS_INTERVAL = 3000; // analyse toutes les 3 secondes
 
+// --- Buzzer sound generator (Web Audio API) ---
+const playBuzzer = (): Promise<void> =>
+  new Promise((resolve) => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(160, ctx.currentTime + 1.2);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 1.2);
+      osc.onended = () => { ctx.close(); resolve(); };
+    } catch {
+      resolve();
+    }
+  });
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 // --- Audio helpers (unchanged) ---
@@ -293,7 +315,10 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     timeLeftRef.current = timeLeft;
 
     if (timeLeft <= 0) {
-      if (doneCacheRef.current) playAudioUrl(doneCacheRef.current);
+      // Play buzzer first, then TTS "Terminé"
+      playBuzzer().then(() => {
+        if (doneCacheRef.current) playAudioUrl(doneCacheRef.current);
+      });
       setPhase("processing");
       setTerminalProgress(0);
       return;

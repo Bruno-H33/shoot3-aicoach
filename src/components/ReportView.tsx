@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 import { ArrowLeft, Target, Dumbbell, Calendar, Flame, ChevronDown, ChevronUp, Camera, Download, CheckCircle, Crown, Zap, Users, Shield, Award, Check } from "lucide-react";
 import AnnotatedFrame from "@/components/AnnotatedFrame";
+import ScoreCard from "@/components/ScoreCard";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportViewProps {
@@ -272,6 +273,12 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
                 <span>📲</span>
                 Partager
               </button>
+              <ScoreCard
+                playerName={report.player_name}
+                score={report.score}
+                scoreLabel={report.score_label}
+                bestFrameUrl={framesUrls.length > 0 ? framesUrls[0] : undefined}
+              />
             </div>
           </div>
 
