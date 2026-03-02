@@ -37,6 +37,7 @@ interface DayPlan {
 }
 
 interface Report {
+  tir_valide?: boolean;
   player_name: string;
   score: number;
   score_label: string;
@@ -134,6 +135,16 @@ const ReportView = ({ analysisId, onBack }: ReportViewProps) => {
         <p className="font-sport text-2xl text-foreground mb-4">ERREUR</p>
         <p className="font-body text-sm text-muted-foreground mb-6">{error || "Rapport introuvable"}</p>
         <button onClick={onBack} className="btn-primary">RETOUR</button>
+      </div>
+    );
+  }
+
+  if (report.tir_valide === false) {
+    return (
+      <div className="mobile-container flex flex-col bg-background min-h-dvh items-center justify-center px-8 text-center">
+        <p className="font-sport text-2xl text-foreground mb-4">ACTION NON RECONNUE</p>
+        <p className="font-body text-sm text-muted-foreground mb-6">L'IA n'a pas détecté de tir de basketball valide dans ta vidéo. Veuillez refilmer ton tir debout, face au panier, avec le ballon visible.</p>
+        <button onClick={onBack} className="btn-primary">REFILMER MON TIR</button>
       </div>
     );
   }

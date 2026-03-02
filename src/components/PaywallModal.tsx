@@ -77,7 +77,7 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
         <div className="text-center pt-6 space-y-2">
           <p className="font-body text-sm text-muted-foreground tracking-widest uppercase">Score Global</p>
           <p className="font-sport text-6xl text-foreground">{score}<span className="text-2xl text-muted-foreground">/100</span></p>
-          <p className="font-body text-sm text-foreground/70">Bien joué {pseudo} ! Voici ce que l'IA a détecté 👇</p>
+          <p className="font-body text-sm text-foreground/60">Analyse biomécanique terminée, {pseudo}. Voici le premier défaut critique identifié sur ta mécanique :</p>
         </div>
 
         {/* ─── SECTION 1 : Free issue preview ─── */}
@@ -169,8 +169,8 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
 
             {/* Teaser phrase — above blur */}
             <div className="px-5 pt-4 pb-2">
-              <p className="font-body text-sm text-foreground/80 leading-relaxed">
-                « Ton analyse révèle {issues.length > 0 ? `${issues.length} axe${issues.length > 1 ? "s" : ""} d'amélioration` : "des axes d'amélioration"} sur ta mécanique de tir. Voici ton diagnostic complet avec les corrections personnalisées… »
+              <p className="font-body text-sm text-foreground/70 leading-relaxed">
+                « L'IA a compilé ton rapport biomécanique complet. Au-delà de cette première erreur, ton document certifié contient le diagnostic de tes appuis, tes angles de tir, ainsi que ton plan d'action (drills, séries, focus mental) pour corriger définitivement ta gestuelle. »
               </p>
             </div>
 
