@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { Share2 } from "lucide-react";
+import { loadLandmarker, POSE_CONNECTIONS, MAJOR_JOINTS, STROKE_COLOR, GLOW_COLOR, LINE_WIDTH, JOINT_RADIUS } from "@/hooks/usePoseLandmarker";
 
 interface ScoreCardProps {
   playerName: string;
@@ -109,6 +110,62 @@ const ScoreCard = ({ playerName, score, scoreLabel, bestFrameUrl }: ScoreCardPro
             ctx.clip();
             ctx.drawImage(img, x, y, w, h);
             ctx.restore();
+
+            // Draw MediaPipe skeleton overlay on the frame
+            try {
+              const landmarker = await loadLandmarker();
+              const result = landmarker.detect(img);
+              if (result.landmarks && result.landmarks.length > 0) {
+                const lms = result.landmarks[0];
+                ctx.save();
+                // Clip to same rounded rect for skeleton
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+                ctx.clip();
+
+                // Draw connections
+                ctx.shadowColor = GLOW_COLOR;
+                ctx.shadowBlur = 10;
+                ctx.strokeStyle = STROKE_COLOR;
+                ctx.lineWidth = LINE_WIDTH * (w / img.width); // scale line width
+                ctx.lineCap = "round";
+                for (const [a, b] of POSE_CONNECTIONS) {
+                  const la = lms[a];
+                  const lb = lms[b];
+                  if (!la || !lb) continue;
+                  if ((la.visibility ?? 1) < 0.3 || (lb.visibility ?? 1) < 0.3) continue;
+                  ctx.beginPath();
+                  ctx.moveTo(x + la.x * w, y + la.y * h);
+                  ctx.lineTo(x + lb.x * w, y + lb.y * h);
+                  ctx.stroke();
+                }
+
+                // Draw joints
+                ctx.shadowBlur = 6;
+                ctx.fillStyle = STROKE_COLOR;
+                const jr = JOINT_RADIUS * (w / img.width);
+                for (const idx of MAJOR_JOINTS) {
+                  const lm = lms[idx];
+                  if (!lm || (lm.visibility ?? 1) < 0.3) continue;
+                  ctx.beginPath();
+                  ctx.arc(x + lm.x * w, y + lm.y * h, jr, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+                ctx.restore();
+              }
+            } catch {
+              // MediaPipe failed — frame stays without skeleton
+            }
 
             // Border
             ctx.strokeStyle = "rgba(255,77,0,0.4)";
