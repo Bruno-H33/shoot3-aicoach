@@ -147,7 +147,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrement_user_credits: {
+        Args: { p_user_id: string }
+        Returns: {
+          remaining_credits: number
+          success: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

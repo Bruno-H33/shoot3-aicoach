@@ -15,11 +15,30 @@ Deno.serve(async (req) => {
     const { frames, context } = await req.json();
     const isLive = context === "live";
 
+    const MAX_FRAMES = 30;
+    const MAX_FRAME_SIZE = 5 * 1024 * 1024; // 5MB per frame
+
     if (!frames || !Array.isArray(frames) || frames.length === 0) {
       return new Response(JSON.stringify({ error: "Missing frames array" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (frames.length > MAX_FRAMES) {
+      return new Response(JSON.stringify({ error: `Too many frames (max ${MAX_FRAMES})` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    for (const frame of frames) {
+      if (typeof frame !== 'string' || frame.length > MAX_FRAME_SIZE) {
+        return new Response(JSON.stringify({ error: "Invalid frame data" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
