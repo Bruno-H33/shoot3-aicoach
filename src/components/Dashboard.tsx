@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import SniperEliteModal from "@/components/SniperEliteModal";
 import PassTeamModal from "@/components/PassTeamModal";
+import DrillVideos from "@/components/DrillVideos";
 
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
@@ -478,7 +479,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
         {/* ==================== DRILLS ==================== */}
         {activeTab === "drills" && (
           <>
-            {!hasCompletedTest ? (
+            {!hasCompletedTest && !trialActive ? (
               <div className="flex flex-col items-center justify-center h-96 px-8 text-center animate-fade-in-up">
                 <Dumbbell className="w-16 h-16 text-muted-foreground/40 mb-6" />
                 <h2 className="font-sport text-4xl text-foreground">
@@ -505,7 +506,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                           <Zap className="w-5 h-5 text-green-400" />
                         </div>
                         <div>
-                          <p className="font-sport text-base text-foreground tracking-wider">SEMAINE {Math.max(1, 8 - daysRemaining)} D'ESSAI GRATUIT</p>
+                          <p className="font-sport text-base text-foreground tracking-wider">SEMAINE {Math.max(1, Math.ceil((7 - daysRemaining + 1) / 7))} D'ESSAI GRATUIT</p>
                           <p className="font-body text-xs text-green-400">
                             {daysRemaining} jour{daysRemaining > 1 ? "s" : ""} restant{daysRemaining > 1 ? "s" : ""}
                           </p>
@@ -523,7 +524,9 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="font-body text-xs text-primary font-semibold tracking-widest uppercase">Recommandé par l'IA</span>
+                    <span className="font-body text-xs text-primary font-semibold tracking-widest uppercase">
+                      {trialActive ? "Essai gratuit actif" : "Recommandé par l'IA"}
+                    </span>
                   </div>
                   <h2 className="font-sport text-4xl text-foreground">MES <span className="text-primary">DRILLS</span></h2>
                 </div>
@@ -545,8 +548,24 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                   ))}
                 </div>
 
-                {/* Drill Cards */}
+                {/* Free Trial Videos */}
+                {trialActive && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-green-400" />
+                      <h3 className="font-sport text-lg text-foreground tracking-wider">EXERCICES DÉBLOQUÉS</h3>
+                    </div>
+                    <DrillVideos filter={drillFilter} />
+                  </div>
+                )}
+
+                {/* Premium Drill Cards */}
                 <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-primary/60" />
+                    <h3 className="font-sport text-lg text-foreground tracking-wider">PROGRAMMES PREMIUM</h3>
+                  </div>
+
                   {/* Card 1 — Neuro-Focus (Elite) */}
                   {(drillFilter === "Tout" || drillFilter === "Neuro") && (
                     <button
@@ -554,7 +573,6 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                       className="w-full rounded-2xl p-5 border border-primary/30 relative overflow-hidden text-left active:scale-98 transition-all neon-border"
                       style={{ background: "linear-gradient(135deg, rgba(20,8,2,0.98), rgba(45,18,4,0.95))" }}
                     >
-                      {/* Elite badge */}
                       <div className="absolute top-4 right-4">
                         <span className="font-body text-[9px] font-bold tracking-widest bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase">ELITE</span>
                       </div>

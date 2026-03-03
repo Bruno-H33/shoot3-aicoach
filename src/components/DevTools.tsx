@@ -7,7 +7,8 @@ const DevTools = () => {
   const [timeOffset, setTimeOffset] = useState(parseInt(localStorage.getItem("s3_dev_time_offset") || "0"));
 
   const simulateDay7 = () => {
-    const offset = 7 * 24 * 60 * 60 * 1000;
+    const currentOffset = parseInt(localStorage.getItem("s3_dev_time_offset") || "0");
+    const offset = currentOffset + (7 * 24 * 60 * 60 * 1000);
     localStorage.setItem("s3_dev_time_offset", offset.toString());
     setTimeOffset(offset);
     toast.success("⏰ Simulation : +7 jours activée");
@@ -73,6 +74,9 @@ const DevTools = () => {
               <div className="space-y-1">
                 <p className="font-body text-[10px] text-foreground/60">
                   • Trial actif vérifié avec offset
+                </p>
+                <p className="font-body text-[10px] text-foreground/60">
+                  • Cliquer plusieurs fois pour avancer plus
                 </p>
                 <p className="font-body text-[10px] text-foreground/60">
                   • Reload requis après modification
