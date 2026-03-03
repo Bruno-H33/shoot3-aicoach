@@ -12,6 +12,9 @@ import ReportView from "@/components/ReportView";
 import AccessCodeGate from "@/components/AccessCodeGate";
 import NoCreditsModal from "@/components/NoCreditsModal";
 import DevTools from "@/components/DevTools";
+import CheckupRequiredModal from "@/components/CheckupRequiredModal";
+import ProgressComparisonModal from "@/components/ProgressComparisonModal";
+import { useFreeTrial } from "@/hooks/useFreeTrial";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
 
@@ -40,6 +43,10 @@ const Index = () => {
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [showNoCredits, setShowNoCredits] = useState(false);
+  const [showCheckupModal, setShowCheckupModal] = useState(false);
+  const [showProgressComparison, setShowProgressComparison] = useState(false);
+  const [isCheckupMode, setIsCheckupMode] = useState(false);
+  const { needsCheckup, hasCompletedCheckup, refetch: refetchTrial } = useFreeTrial();
 
   // Fetch user credits
   const fetchCredits = useCallback(async (userId: string) => {
@@ -77,7 +84,7 @@ const Index = () => {
       const savedPseudo = localStorage.getItem("s3_user_pseudo");
       const name = savedPseudo || user.user_metadata?.full_name || user.user_metadata?.name || "";
       if (name) setUserName(name);
-      
+
       const pendingFlow = sessionStorage.getItem("s3_pending_auth_flow");
       if (pendingFlow) {
         sessionStorage.removeItem("s3_pending_auth_flow");
@@ -88,7 +95,7 @@ const Index = () => {
         setHasCompletedTest(true);
         setView("dashboard");
         setShowPaywall(true);
-        
+
         // Save analysis to DB and show paywall
         if (pending.analysisResult) {
           saveAnalysis(pending.analysisResult, user.id, pending.analysisResult?.frames).then((id) => {
@@ -110,6 +117,13 @@ const Index = () => {
       }
     }
   }, [user, loading, view]);
+
+  // Check if user needs checkup when entering dashboard
+  useEffect(() => {
+    if (view === "dashboard" && user && needsCheckup && !hasCompletedCheckup) {
+      setShowCheckupModal(true);
+    }
+  }, [view, user, needsCheckup, hasCompletedCheckup]);
 
   // After auth completes from auth-prompt
   useEffect(() => {
@@ -227,7 +241,7 @@ const Index = () => {
       frames,
     };
     setAnalysisResult(result);
-    
+
     if (user) {
       const { data, error } = await supabase.rpc('decrement_user_credits', {
         p_user_id: user.id,
@@ -239,8 +253,22 @@ const Index = () => {
       saveAnalysis(result, user.id, frames).then((id) => {
         if (id) setCurrentAnalysisId(id);
       });
-      setView("dashboard");
-      setShowPaywall(true);
+
+      if (isCheckupMode) {
+        await supabase.from("progress_checkups").insert({
+          user_id: user.id,
+          day_number: 7,
+          overall_score: result.score,
+          issues: result.issues as any,
+        });
+        setIsCheckupMode(false);
+        setShowCheckupModal(false);
+        await refetchTrial();
+        setShowProgressComparison(true);
+      } else {
+        setView("dashboard");
+        setShowPaywall(true);
+      }
     } else {
       sessionStorage.setItem("s3_pending_auth_flow", JSON.stringify({
         userName,
@@ -248,6 +276,26 @@ const Index = () => {
         analysisResult: result,
       }));
       setView("auth-prompt");
+    }
+  };
+
+  const handleStartCheckup = () => {
+    setIsCheckupMode(true);
+    setShowCheckupModal(false);
+    setView("camera");
+  };
+
+  const handleProgressComparisonUpgrade = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: "price_1T347IRKXHvnBBog16QQGxBo" },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
     }
   };
 
@@ -328,6 +376,23 @@ const Index = () => {
 
         {showNoCredits && (
           <NoCreditsModal onClose={() => setShowNoCredits(false)} />
+        )}
+
+        {showCheckupModal && (
+          <CheckupRequiredModal
+            onStartCheckup={handleStartCheckup}
+            onClose={undefined}
+          />
+        )}
+
+        {showProgressComparison && (
+          <ProgressComparisonModal
+            onClose={() => {
+              setShowProgressComparison(false);
+              setView("dashboard");
+            }}
+            onUpgrade={handleProgressComparisonUpgrade}
+          />
         )}
 
         <DevTools />

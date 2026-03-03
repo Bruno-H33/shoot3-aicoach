@@ -128,47 +128,68 @@ const ProgressComparisonModal = ({ onClose, onUpgrade }: ProgressComparisonModal
               )}
 
               <div className="space-y-6">
-                <div>
-                  <p className="font-sport text-2xl text-foreground mb-4 text-center tracking-wide">
-                    REJOINS LE PROGRAMME SNIPER ELITE
+                <div className="rounded-2xl p-5 border border-orange-500/40" style={{ background: "linear-gradient(135deg, rgba(30, 10, 0, 0.95), rgba(50, 20, 5, 0.9))" }}>
+                  <p className="font-sport text-2xl text-foreground mb-3 text-center tracking-wide">
+                    NE T'ARRÊTE PAS EN SI BON CHEMIN
                   </p>
 
                   <p className="font-body text-sm text-muted-foreground text-center mb-6 leading-relaxed">
-                    Tu as fait le plus dur : prouver ton engagement. Maintenant, <span className="text-primary font-semibold">va au bout de ta transformation</span> avec un accompagnement complet sur 3 mois.
+                    Tu as prouvé ta détermination. Maintenant, <span className="text-primary font-semibold">va au bout de ta transformation</span> avec le Programme Sniper Elite.
                   </p>
 
-                  <div className="space-y-2 mb-6 px-2">
-                    {[
-                      "Plan de training sur 3 mois (+12 analyses)",
-                      "Check-up biomécanique hebdomadaire",
-                      "Exercices neuro-cognitifs et méca.",
-                      "Pass Team inclus (Vestiaire + Ligue)",
-                      "Shoot3 ID Certifié au bout de 3 mois",
-                    ].map((item) => (
-                      <div key={item} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-2" />
-                        <p className="font-body text-sm text-foreground/80">{item}</p>
-                      </div>
-                    ))}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between">
+                      <p className="font-body text-sm text-foreground/60">Programme complet 3 mois</p>
+                      <p className="font-sport text-lg text-foreground/40 line-through">69.99€</p>
+                    </div>
+                    <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    <div className="flex items-center justify-between">
+                      <p className="font-sport text-base text-primary">Offre Fin d'Essai</p>
+                      <p className="font-sport text-3xl text-primary">49.99€</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl p-4 bg-black/30 border border-primary/20 mb-4">
+                    <p className="font-body text-xs text-primary/80 mb-3 uppercase tracking-wider">Inclus dans le bootcamp :</p>
+                    <div className="space-y-2">
+                      {[
+                        "12 analyses biomécanique IA complètes",
+                        "Check-up hebdomadaire de progression",
+                        "Exercices neuro-cognitifs personnalisés",
+                        "Pass Team (Vestiaire + Ligue) offert",
+                        "Shoot3 ID Certifié à la fin",
+                      ].map((item) => (
+                        <div key={item} className="flex items-start gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+                          <p className="font-body text-xs text-foreground/90">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="font-body text-xs text-orange-400 font-semibold mb-2">
+                      ⚡ ÉCONOMIE DE 20€ · Offre réservée aux finishers
+                    </p>
                   </div>
                 </div>
 
                 <button
                   onClick={onUpgrade}
-                  className="w-full py-4 rounded-2xl font-sport text-lg tracking-widest uppercase flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-primary-foreground"
+                  className="w-full py-5 rounded-2xl font-sport text-xl tracking-widest uppercase flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-primary-foreground"
                   style={{
                     background: "linear-gradient(135deg, hsl(18 90% 40%), hsl(18 100% 50%))",
-                    boxShadow: "0 4px 30px hsl(18 100% 50% / 0.35)",
+                    boxShadow: "0 4px 40px hsl(18 100% 50% / 0.45), 0 0 80px hsl(18 100% 50% / 0.2)",
                   }}
                 >
-                  DÉMARRER LE BOOTCAMP · 49.99€
+                  REJOINDRE SNIPER ELITE · 49.99€
                 </button>
 
                 <button
                   onClick={onClose}
                   className="font-body text-sm text-muted-foreground underline text-center w-full py-2"
                 >
-                  Plus tard
+                  Je décide plus tard
                 </button>
               </div>
             </>

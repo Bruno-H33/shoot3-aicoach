@@ -7,6 +7,8 @@ interface TrialStatus {
   startedAt: string | null;
   endsAt: string | null;
   isLoading: boolean;
+  needsCheckup: boolean;
+  hasCompletedCheckup: boolean;
 }
 
 export const useFreeTrial = () => {
@@ -16,6 +18,8 @@ export const useFreeTrial = () => {
     startedAt: null,
     endsAt: null,
     isLoading: true,
+    needsCheckup: false,
+    hasCompletedCheckup: false,
   });
 
   const fetchTrialStatus = async () => {
@@ -28,6 +32,8 @@ export const useFreeTrial = () => {
           startedAt: null,
           endsAt: null,
           isLoading: false,
+          needsCheckup: false,
+          hasCompletedCheckup: false,
         });
         return;
       }
@@ -48,12 +54,24 @@ export const useFreeTrial = () => {
         const daysRemaining = Math.max(0, Math.ceil((endsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
         const isActive = trial.is_active && now < endsAt;
 
+        const { data: checkup } = await supabase
+          .from("progress_checkups")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("day_number", 7)
+          .maybeSingle();
+
+        const needsCheckup = daysRemaining === 0 && !checkup;
+        const hasCompletedCheckup = !!checkup;
+
         setTrialStatus({
           isActive,
           daysRemaining,
           startedAt: trial.started_at,
           endsAt: trial.ends_at,
           isLoading: false,
+          needsCheckup,
+          hasCompletedCheckup,
         });
       } else {
         setTrialStatus({
@@ -62,6 +80,8 @@ export const useFreeTrial = () => {
           startedAt: null,
           endsAt: null,
           isLoading: false,
+          needsCheckup: false,
+          hasCompletedCheckup: false,
         });
       }
     } catch (error) {
@@ -72,6 +92,8 @@ export const useFreeTrial = () => {
         startedAt: null,
         endsAt: null,
         isLoading: false,
+        needsCheckup: false,
+        hasCompletedCheckup: false,
       });
     }
   };
