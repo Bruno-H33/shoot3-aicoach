@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SniperEliteModal from "@/components/SniperEliteModal";
 import PassTeamModal from "@/components/PassTeamModal";
 import DrillVideos from "@/components/DrillVideos";
+import ProTab from "@/components/ProTab";
 
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
@@ -630,6 +631,11 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
 
         {/* ==================== PRO ==================== */}
         {activeTab === "pro" && (
+          <ProTab userName={userName} />
+        )}
+
+        {/* OLD PRO TAB - DEPRECATED */}
+        {activeTab === "pro-old" && (
           <div className="px-5 pb-4 space-y-4 animate-fade-in-up">
             {/* User Profile Header */}
             <div className="flex items-center gap-4 py-2">
