@@ -11,6 +11,7 @@ import AuthPrompt from "@/components/AuthPrompt";
 import ReportView from "@/components/ReportView";
 import AccessCodeGate from "@/components/AccessCodeGate";
 import NoCreditsModal from "@/components/NoCreditsModal";
+import DevTools from "@/components/DevTools";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
 
@@ -328,6 +329,8 @@ const Index = () => {
         {showNoCredits && (
           <NoCreditsModal onClose={() => setShowNoCredits(false)} />
         )}
+
+        <DevTools />
         </>
         )}
       </div>

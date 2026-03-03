@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Bell, Lock, Play, Dumbbell, User, LogOut, Trash2, FileText } from "lucide-react";
+import { Bell, Lock, Play, Dumbbell, User, LogOut, Trash2, FileText, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFreeTrial } from "@/hooks/useFreeTrial";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -26,6 +27,7 @@ interface DashboardProps {
 
 const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport }: DashboardProps) => {
   const { signOut, user } = useAuth();
+  const { isActive: trialActive, daysRemaining } = useFreeTrial();
   const isAdmin = sessionStorage.getItem("s3_access_code") === "SHOOT3ADMIN";
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
@@ -491,6 +493,32 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
               </div>
             ) : (
               <div className="px-5 space-y-4 animate-fade-in-up">
+                {/* Trial Banner */}
+                {trialActive && (
+                  <div
+                    className="rounded-2xl p-4 border border-green-500/30 relative overflow-hidden"
+                    style={{ background: "linear-gradient(135deg, rgba(10, 30, 15, 0.95), rgba(15, 45, 20, 0.9))" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div>
+                          <p className="font-sport text-base text-foreground tracking-wider">SEMAINE {Math.max(1, 8 - daysRemaining)} D'ESSAI GRATUIT</p>
+                          <p className="font-body text-xs text-green-400">
+                            {daysRemaining} jour{daysRemaining > 1 ? "s" : ""} restant{daysRemaining > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-sport text-2xl text-green-400">{daysRemaining}</p>
+                        <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">Jours</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Title */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">

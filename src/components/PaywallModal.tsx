@@ -37,6 +37,39 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
     setUserGoal(goal);
   }, []);
 
+  const handleStartFreeTrial = async () => {
+    setBuyLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const { error: trialError } = await supabase
+        .from("user_trials")
+        .insert({
+          user_id: user.id,
+          started_at: new Date().toISOString(),
+          ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          is_active: true,
+        });
+
+      if (trialError) throw trialError;
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ trial_drills_unlocked: true })
+        .eq("user_id", user.id);
+
+      if (profileError) throw profileError;
+
+      toast.success("Free Trial activé ! Profite de 7 jours gratuits.");
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'activation du trial");
+    } finally {
+      setBuyLoading(false);
+    }
+  };
+
   const handleBuyReport = async () => {
     setBuyLoading(true);
     try {
@@ -94,26 +127,53 @@ const PaywallModal = ({ userName, onClose, onRegistered, isRegistered, analysisR
             </div>
           </div>
 
-          <div className="rounded-2xl p-6 border border-primary/20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(25, 15, 5, 0.95), rgba(45, 25, 10, 0.9))" }}>
+          <div className="rounded-2xl p-6 border border-green-500/30 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(10, 30, 15, 0.95), rgba(15, 45, 20, 0.9))" }}>
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-primary" />
-              <h3 className="font-sport text-xl text-foreground tracking-wider">DÉBLOQUE LA SOLUTION</h3>
+              <Sparkles className="w-5 h-5 text-green-400" />
+              <h3 className="font-sport text-xl text-foreground tracking-wider">DÉBLOQUE TON PROGRAMME</h3>
             </div>
 
-            <p className="font-body text-sm text-foreground/80 leading-relaxed mb-6">
-              Obtiens le Rapport PDF complet incluant le plan d'entraînement sur 30 jours pour corriger ce défaut précis.
+            <p className="font-body text-base text-foreground leading-relaxed mb-4">
+              L'IA a identifié tes failles. <span className="text-green-400 font-semibold">Débloque ton programme d'entraînement personnalisé gratuitement pendant 7 jours</span> pour commencer à corriger ça.
             </p>
 
+            <div className="space-y-2 mb-6">
+              {[
+                "Accès aux Drills personnalisés",
+                "Suivi de progression quotidien",
+                "Exercices neuro-cognitifs et mécaniques",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                  <p className="font-body text-sm text-foreground/80">{item}</p>
+                </div>
+              ))}
+            </div>
+
             <button
-              onClick={handleBuyReport}
+              onClick={handleStartFreeTrial}
               disabled={buyLoading}
-              className="w-full py-4 rounded-2xl font-sport text-lg tracking-widest uppercase flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 text-background"
+              className="w-full py-4 rounded-2xl font-sport text-lg tracking-widest uppercase flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 text-black mb-3"
               style={{
-                background: "linear-gradient(135deg, #e0e0e0, #ffffff)",
-                boxShadow: "0 4px 20px rgba(255, 255, 255, 0.3)",
+                background: "linear-gradient(135deg, #4ade80, #22c55e)",
+                boxShadow: "0 4px 20px rgba(34, 197, 94, 0.4)",
               }}
             >
-              {buyLoading ? "REDIRECTION..." : "ACHETER LE RAPPORT - 9.99€"}
+              {buyLoading ? "ACTIVATION..." : "DÉMARRER 7 JOURS GRATUITS"}
+            </button>
+
+            <p className="font-body text-xs text-center text-muted-foreground">
+              Sans engagement · Annule quand tu veux
+            </p>
+          </div>
+
+          <div className="text-center">
+            <p className="font-body text-xs text-muted-foreground mb-3">Ou</p>
+            <button
+              onClick={handleBuyReport}
+              className="font-body text-sm text-primary underline hover:text-primary/80 transition-colors"
+            >
+              Acheter uniquement le Rapport PDF - 9.99€
             </button>
           </div>
 
