@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Play, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Play, ChevronRight, Lock, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface DrillVideo {
   id: string;
@@ -47,10 +49,36 @@ interface DrillVideosProps {
 
 const DrillVideos = ({ filter }: DrillVideosProps) => {
   const [selectedVideo, setSelectedVideo] = useState<DrillVideo | null>(null);
+  const [videoTime, setVideoTime] = useState(0);
+  const [hasUnlockedFull, setHasUnlockedFull] = useState(false);
 
   const filteredDrills = DRILL_VIDEOS.filter(
     drill => filter === "Tout" || drill.category === filter
   );
+
+  useEffect(() => {
+    if (selectedVideo) {
+      setVideoTime(0);
+      const timer = setInterval(() => {
+        setVideoTime(prev => prev + 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [selectedVideo]);
+
+  const handleUnlockFull = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: "price_1T347IRKXHvnBBog16QQGxBo" },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la création du checkout");
+    }
+  };
 
   return (
     <>
@@ -119,11 +147,46 @@ const DrillVideos = ({ filter }: DrillVideosProps) => {
                 alt={selectedVideo.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
-                  <Play className="w-8 h-8 text-primary-foreground fill-primary-foreground ml-1" />
+
+              {/* Preview timer and blur overlay after 30s */}
+              {videoTime >= 30 && !hasUnlockedFull && (
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6">
+                  <Lock className="w-12 h-12 text-primary mb-3" />
+                  <p className="font-sport text-lg text-foreground mb-2 text-center">
+                    PREVIEW TERMINÉ
+                  </p>
+                  <p className="font-body text-xs text-muted-foreground mb-4 text-center">
+                    Débloque l'accès complet pour continuer
+                  </p>
+                  <button
+                    onClick={handleUnlockFull}
+                    className="px-6 py-3 rounded-xl font-sport text-sm tracking-wider uppercase text-primary-foreground"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(18 90% 40%), hsl(18 100% 50%))",
+                      boxShadow: "0 4px 20px hsl(18 100% 50% / 0.35)",
+                    }}
+                  >
+                    DÉVERROUILLER · 49.99€
+                  </button>
                 </div>
-              </div>
+              )}
+
+              {/* Timer badge */}
+              {videoTime < 30 && !hasUnlockedFull && (
+                <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/70 border border-orange-400/50">
+                  <p className="font-sport text-xs text-orange-400">
+                    PREVIEW {30 - videoTime}s
+                  </p>
+                </div>
+              )}
+
+              {videoTime < 30 && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
+                    <Play className="w-8 h-8 text-primary-foreground fill-primary-foreground ml-1" />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="p-5">
@@ -147,12 +210,26 @@ const DrillVideos = ({ filter }: DrillVideosProps) => {
               </p>
 
               <div className="flex gap-2">
-                <button
-                  onClick={() => window.open(selectedVideo.videoUrl, '_blank')}
-                  className="flex-1 btn-primary py-3"
-                >
-                  REGARDER LA VIDÉO
-                </button>
+                {videoTime < 30 || hasUnlockedFull ? (
+                  <button
+                    onClick={() => window.open(selectedVideo.videoUrl, '_blank')}
+                    className="flex-1 btn-primary py-3"
+                  >
+                    REGARDER LA VIDÉO
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleUnlockFull}
+                    className="flex-1 py-3 rounded-xl font-sport text-sm tracking-wider uppercase text-primary-foreground flex items-center justify-center gap-2"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(18 90% 40%), hsl(18 100% 50%))",
+                      boxShadow: "0 4px 20px hsl(18 100% 50% / 0.35)",
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    DÉVERROUILLER TOUT
+                  </button>
+                )}
                 <button
                   onClick={() => setSelectedVideo(null)}
                   className="px-4 py-3 rounded-xl border border-white/20 text-muted-foreground font-body text-sm hover:border-white/40 transition-colors"

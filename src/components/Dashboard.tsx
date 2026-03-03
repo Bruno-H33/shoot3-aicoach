@@ -39,6 +39,27 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
   const [showAllReports, setShowAllReports] = useState(false);
 
+  // Daily reminder
+  useEffect(() => {
+    if (!trialActive || !user) return;
+
+    const lastReminder = localStorage.getItem(`s3_last_reminder_${user.id}`);
+    const today = new Date().toDateString();
+
+    if (lastReminder !== today && daysRemaining > 0) {
+      setTimeout(() => {
+        toast({
+          title: daysRemaining === 3 ? "3 JOURS RESTANTS" : `Plus que ${daysRemaining} jours`,
+          description: daysRemaining === 3
+            ? "Le check-up final arrive bientôt. Continue de t'entraîner pour maximiser ta progression !"
+            : `Profite de ton essai gratuit pour progresser chaque jour.`,
+          duration: 6000,
+        });
+        localStorage.setItem(`s3_last_reminder_${user.id}`, today);
+      }, 3000);
+    }
+  }, [trialActive, daysRemaining, user]);
+
   // Fetch past paid reports
   useEffect(() => {
     if (!user) return;

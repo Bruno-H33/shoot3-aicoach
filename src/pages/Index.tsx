@@ -62,6 +62,12 @@ const Index = () => {
     if (user) fetchCredits(user.id);
   }, [user, fetchCredits]);
 
+  useEffect(() => {
+    if (user && needsCheckup && !hasCompletedCheckup && view === "dashboard" && !showCheckupModal && !showProgressComparison) {
+      setShowCheckupModal(true);
+    }
+  }, [user, needsCheckup, hasCompletedCheckup, view, showCheckupModal, showProgressComparison]);
+
   // Handle payment success redirect
   useEffect(() => {
     if (loading) return; // Wait for auth to finish loading
@@ -292,6 +298,7 @@ const Index = () => {
       });
       if (error) throw error;
       if (data?.url) {
+        setShowProgressComparison(false);
         window.open(data.url, "_blank");
       }
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, TrendingUp, Award } from "lucide-react";
+import { X, TrendingUp, Award, Clock, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,9 +12,26 @@ const ProgressComparisonModal = ({ onClose, onUpgrade }: ProgressComparisonModal
   const [day1Score, setDay1Score] = useState(0);
   const [day7Score, setDay7Score] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState(48 * 60 * 60); // 48h in seconds
+  const [spotsLeft, setSpotsLeft] = useState(3);
 
   useEffect(() => {
     fetchProgressData();
+
+    // Timer countdown
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+
+    // Spots countdown (random)
+    const spotsInterval = setInterval(() => {
+      setSpotsLeft(prev => Math.max(1, prev - (Math.random() > 0.7 ? 1 : 0)));
+    }, 120000); // Every 2 minutes
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(spotsInterval);
+    };
   }, []);
 
   const fetchProgressData = async () => {
@@ -60,6 +77,10 @@ const ProgressComparisonModal = ({ onClose, onUpgrade }: ProgressComparisonModal
 
   const improvement = day7Score - day1Score;
   const improvementPercent = day1Score > 0 ? Math.round((improvement / day1Score) * 100) : 0;
+
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  const seconds = timeRemaining % 60;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-y-auto">
@@ -129,12 +150,35 @@ const ProgressComparisonModal = ({ onClose, onUpgrade }: ProgressComparisonModal
 
               <div className="space-y-6">
                 <div className="rounded-2xl p-5 border border-orange-500/40" style={{ background: "linear-gradient(135deg, rgba(30, 10, 0, 0.95), rgba(50, 20, 5, 0.9))" }}>
+                  {/* Urgency timer */}
+                  <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-red-400" />
+                      <p className="font-body text-xs text-red-400">Offre expire dans</p>
+                    </div>
+                    <p className="font-sport text-sm text-red-400">
+                      {hours}h {String(minutes).padStart(2, '0')}m {String(seconds).padStart(2, '0')}s
+                    </p>
+                  </div>
+
+                  {/* Scarcity */}
+                  <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-orange-500/10">
+                    <Users className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                    <p className="font-body text-xs text-orange-400">
+                      Plus que <span className="font-semibold">{spotsLeft} places</span> à ce prix
+                    </p>
+                  </div>
+
                   <p className="font-sport text-2xl text-foreground mb-3 text-center tracking-wide">
                     NE T'ARRÊTE PAS EN SI BON CHEMIN
                   </p>
 
+                  <p className="font-body text-sm text-muted-foreground text-center mb-4 leading-relaxed">
+                    Tu as progressé de <span className="text-green-400 font-semibold">+{improvement} points</span> en 7 jours.
+                  </p>
+
                   <p className="font-body text-sm text-muted-foreground text-center mb-6 leading-relaxed">
-                    Tu as prouvé ta détermination. Maintenant, <span className="text-primary font-semibold">va au bout de ta transformation</span> avec le Programme Sniper Elite.
+                    Imagine ton niveau dans 3 mois avec le <span className="text-primary font-semibold">Programme Sniper Elite</span>.
                   </p>
 
                   <div className="space-y-3 mb-6">
@@ -169,7 +213,7 @@ const ProgressComparisonModal = ({ onClose, onUpgrade }: ProgressComparisonModal
 
                   <div className="text-center">
                     <p className="font-body text-xs text-orange-400 font-semibold mb-2">
-                      ⚡ ÉCONOMIE DE 20€ · Offre réservée aux finishers
+                      ÉCONOMIE DE 20€ · Offre réservée aux finishers
                     </p>
                   </div>
                 </div>
