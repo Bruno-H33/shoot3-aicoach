@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Trash2, Shield, Target, Users, Zap, CheckCircle2, Crown } from "lucide-react";
+import { LogOut, Trash2, Shield, Target, Users, Zap, CircleCheck as CheckCircle2, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFreeTrial } from "@/hooks/useFreeTrial";
 import { toast } from "@/hooks/use-toast";
