@@ -329,7 +329,7 @@ const Index = () => {
   return (
     <div className="min-h-dvh bg-black flex justify-center">
       <div className="w-full max-w-[430px] relative">
-        {!accessGranted && !user ? (
+        {!accessGranted ? (
           <AccessCodeGate onValidated={() => setAccessGranted(true)} />
         ) : (
         <>
