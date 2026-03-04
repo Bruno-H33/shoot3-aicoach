@@ -65,11 +65,19 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
 
 const fetchTtsAudio = async (text: string): Promise<string | null> => {
   try {
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const response = await fetch(`${SUPABASE_URL}/functions/v1/gemini-tts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${anonKey}`,
+      },
       body: JSON.stringify({ text }),
     });
+    if (!response.ok) {
+      console.error("TTS response not ok:", response.status, await response.text());
+      return null;
+    }
     const data = await response.json();
     if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
       const audioData = data.candidates[0].content.parts[0].inlineData.data;
@@ -227,10 +235,14 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       try {
         const controller = new AbortController();
         analysisAbortRef.current = controller;
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
         const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${anonKey}`,
+          },
           body: JSON.stringify({
             frames: [frame],
             context: "live",
@@ -302,13 +314,18 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
     timeLeftRef.current = timeLeft;
 
     if (timeLeft <= 0) {
+      setPhase("processing");
+      setTerminalProgress(0);
       // Play buzzer first, then TTS "Terminé"
       playBuzzer().then(() => {
         if (doneCacheRef.current) playAudioUrl(doneCacheRef.current);
       });
-      setPhase("processing");
-      setTerminalProgress(0);
       return;
+    }
+
+    // Play buzzer when reaching 0 (1 second before timeLeft becomes 0)
+    if (timeLeft === 1) {
+      playBuzzer();
     }
 
     // GUARANTEED MINIMUM: If at 10s remaining and 0 corrections, fire a fallback
@@ -335,9 +352,13 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
       const frames = keyFramesRef.current;
       if (frames.length === 0) return;
       try {
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
         const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-shot`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${anonKey}`,
+          },
           body: JSON.stringify({
             frames,
             context: "diagnostic",
