@@ -315,6 +315,7 @@ const CameraView = ({ onComplete, onClose }: CameraViewProps) => {
 
     if (timeLeft <= 0) {
       setPhase("processing");
+      setLiveIssues([]);
       setTerminalProgress(0);
       // Play buzzer first, then TTS "Terminé"
       playBuzzer().then(() => {
