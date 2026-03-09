@@ -24,11 +24,11 @@ const AuthPrompt = ({ userName }: AuthPromptProps) => {
           </div>
 
           <h1 className="font-sport text-5xl text-foreground mb-4 tracking-wider">
-            COMPTE CRÉÉ
+            ANALYSE TERMINÉE
           </h1>
 
           <p className="font-body text-base text-muted-foreground mb-2">
-            Voici le diagnostic de ton tir :
+            Voici un aperçu du diagnostic de ton tir :
           </p>
         </div>
 
