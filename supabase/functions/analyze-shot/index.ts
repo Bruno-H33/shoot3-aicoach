@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     const isLive = context === "live";
 
     const MAX_FRAMES = 30;
-    const MAX_FRAME_SIZE = 5 * 1024 * 1024; // 5MB per frame
+    const MAX_FRAME_SIZE = 5 * 1024 * 1024;
 
     if (!frames || !Array.isArray(frames) || frames.length === 0) {
       return new Response(JSON.stringify({ error: "Missing frames array" }), {
@@ -41,32 +41,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
       return new Response(JSON.stringify({ error: "API key not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Build vision messages with the captured frames
-    const imageContents = frames.map((frame: string) => ({
-      type: "image_url" as const,
-      image_url: { url: frame }, // data:image/jpeg;base64,... format
-    }));
+    const imageParts = frames.map((frame: string) => {
+      const base64Data = frame.split(',')[1];
+      return {
+        inline_data: {
+          mime_type: "image/jpeg",
+          data: base64Data
+        }
+      };
+    });
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `Tu es un coach de tir basketball de très haut niveau. Tu as l'œil affûté d'un préparateur NBA, mais tu parles de façon claire et accessible — comme un grand coach qui sait vulgariser pour que chaque joueur comprenne immédiatement quoi corriger.
+    const systemPrompt = `Tu es un coach de tir basketball de très haut niveau. Tu as l'œil affûté d'un préparateur NBA, mais tu parles de façon claire et accessible — comme un grand coach qui sait vulgariser pour que chaque joueur comprenne immédiatement quoi corriger.
 
 === RÈGLE FONDAMENTALE : ANALYSE CONDITIONNELLE ===
 
@@ -86,61 +79,6 @@ Par exemple :
 - Si le joueur est ASSIS → tu NE PEUX PAS analyser les appuis, la flexion, l'équilibre, ni l'atterrissage. TU PEUX analyser le haut du corps (coude, poignet, armé).
 - Si les pieds ne sont PAS DANS LE CADRE → tu NE PEUX PAS commenter les appuis.
 - Si le ballon n'est PAS VISIBLE → tu NE PEUX PAS analyser le dip ni la prise de balle.
-
-=== CHECKLIST BIOMÉCANIQUE CHRONOLOGIQUE ===
-
-Analyse les frames dans l'ordre chronologique du tir. Pour chaque étape, identifie, isole et évalue ce que tu VOIS :
-
-**ÉTAPE 1 — APPUIS & POSTURE DE BASE (Équilibre)**
-⚠️ ANALYSABLE UNIQUEMENT SI : le joueur est debout ET les pieds sont clairement visibles au sol.
-- Pieds écartés largeur d'épaules, pied tireur légèrement avancé (1-2 cm).
-- Pieds légèrement tournés (10-20°) pour libérer l'épaule et aligner le coude.
-- Poids réparti sur l'avant des pieds, genoux fléchis, tronc gainé.
-- Centre de gravité bas et stable.
-
-**ÉTAPE 2 — CINÉTIQUE GLOBALE (Coordination)**
-⚠️ ANALYSABLE UNIQUEMENT SI : tu vois la séquence complète du mouvement des jambes ET du bras.
-- Vague d'énergie fluide : flexion des jambes → poussée → détente → lâcher.
-- Pas de rupture ni de saccade dans la chaîne cinétique.
-- Synchronisation jambes-bras : les jambes poussent AVANT que le bras ne monte.
-- Le tronc reste gainé pour transmettre la puissance sans fuite.
-
-**ÉTAPE 3 — DIP / POCKET (Abaissement du ballon)**
-⚠️ ANALYSABLE UNIQUEMENT SI : le ballon est visible ET tu vois le mouvement vers le bas.
-- Le ballon descend aux hanches ("dip") avant de remonter.
-- Le mouvement est fluide, sans pause ni hésitation.
-- Le "dip" permet d'engager la puissance des jambes dans le tir.
-- La prise de balle est correcte : doigts écartés, espace paume-ballon, poignet cassé.
-
-**ÉTAPE 4 — ANGLE DU COUDE ARMÉ (≈ 90°)**
-⚠️ ANALYSABLE UNIQUEMENT SI : le bras tireur est clairement visible au moment de l'armé.
-- Au moment de l'armé, le coude forme un angle proche de 90°.
-- L'avant-bras est perpendiculaire au sol ou légèrement incliné.
-
-**ÉTAPE 5 — ALIGNEMENT DU COUDE**
-⚠️ ANALYSABLE UNIQUEMENT SI : le coude et le ballon sont clairement visibles au moment de l'armé.
-- Le coude est bien SOUS le ballon, pas écarté sur le côté.
-- Pas d'"aile de poulet" (chicken wing) : coude aligné avec le genou et le pied tireur.
-- La main guide est juste un support latéral, elle ne pousse PAS le ballon.
-
-**ÉTAPE 6 — EXTENSION DU BRAS**
-⚠️ ANALYSABLE UNIQUEMENT SI : tu vois le bras tireur pendant et après l'extension.
-- Le coude finit AU-DESSUS de la ligne des yeux lors de l'extension.
-- Le bras se déplie complètement, pas de retenue.
-- La puissance vient principalement des jambes, le bras dirige.
-
-**ÉTAPE 7 — FOUETTÉ DU POIGNET (Col de Cygne / Gooseneck)**
-⚠️ ANALYSABLE UNIQUEMENT SI : la main et le poignet sont nettement visibles au moment du lâcher.
-- Le poignet claque vers l'avant de façon souple et relâchée.
-- Les derniers doigts à toucher le ballon sont l'index et le majeur → effet rétro.
-- Le poignet termine en position "col de cygne" naturelle.
-
-**ÉTAPE 8 — FOLLOW-THROUGH / LÂCHÉ**
-⚠️ ANALYSABLE UNIQUEMENT SI : tu vois le bras après que le ballon ait quitté la main.
-- Bras tendu après le lâcher, on MAINTIENT la pose (freeze).
-- Doigts pointés vers le cercle, main relâchée.
-- Arc de tir ni trop plat (manque de marge) ni trop haut (perte de précision).
-- Le regard est fixé sur la cible (arrière du cercle), pas sur le ballon.
 
 === ERREURS À DÉTECTER (clés valides) ===
 
@@ -208,22 +146,35 @@ RÈGLES ANTI-HALLUCINATION ET ANALYSE CONDITIONNELLE :
 - Si le ballon n'est PAS VISIBLE, tu NE PEUX PAS commenter no_dip, palm_ball, pinky_roll.
 - Si le tir est propre, retourne "issues" vide et un score élevé (80+)
 - Maximum 3 corrections, les plus critiques d'abord ET analysables dans les conditions actuelles
-- Si pas de tir ou de joueur visible : { "issues": [], "overall_score": -1 }`,
-          },
+- Si pas de tir ou de joueur visible : { "issues": [], "overall_score": -1 }
+
+Analyse ces frames du tir de ce joueur :`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
           {
             role: "user",
-            content: [
-              { type: "text", text: "Analyse ces frames du tir de ce joueur :" },
-              ...imageContents,
-            ],
-          },
+            parts: [
+              { text: systemPrompt },
+              ...imageParts
+            ]
+          }
         ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2048,
+        }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
 
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
@@ -245,9 +196,8 @@ RÈGLES ANTI-HALLUCINATION ET ANALYSE CONDITIONNELLE :
     }
 
     const data = await response.json();
-    const rawContent = data.choices?.[0]?.message?.content || "";
+    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    // Parse the JSON from the AI response
     let analysis;
     const VALID_KEYS = new Set([
       "narrow_base", "square_stance", "stiff_legs", "palm_ball", "no_dip",
@@ -260,7 +210,6 @@ RÈGLES ANTI-HALLUCINATION ET ANALYSE CONDITIONNELLE :
       const cleaned = rawContent.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
       analysis = JSON.parse(cleaned);
 
-      // Filter: only keep issues with valid keys AND high confidence
       if (Array.isArray(analysis.issues)) {
         analysis.issues = analysis.issues.filter((issue: any) =>
           VALID_KEYS.has(issue.key) &&

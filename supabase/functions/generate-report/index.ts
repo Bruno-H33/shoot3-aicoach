@@ -204,8 +204,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("AI not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("AI not configured");
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -224,21 +224,7 @@ Deno.serve(async (req) => {
 
     const systemPrompt = buildSystemPrompt(userName, score, framesCount, user_position || "", user_goal || "");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        temperature: 0.65,
-        max_tokens: 16000,
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Voici les résultats de l'analyse vidéo de ${userName} :
+    const userPrompt = `Voici les résultats de l'analyse vidéo de ${userName} :
 
 Score global : ${score}/100
 
@@ -249,20 +235,37 @@ Nombre de frames capturées : ${framesCount}
 
 Génère le rapport biomécanique complet. Sois exhaustif, précis et pédagogue. Chaque section doit apporter une vraie valeur de coaching.
 
-RAPPEL CRITIQUE : Chaque champ "what" et "why" doit contenir un PARAGRAPHE DÉVELOPPÉ de 50-80 mots minimum. PAS de phrases courtes type feedback vocal.`,
-          },
+RAPPEL CRITIQUE : Chaque champ "what" et "why" doit contenir un PARAGRAPHE DÉVELOPPÉ de 50-80 mots minimum. PAS de phrases courtes type feedback vocal.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: systemPrompt + "\n\n" + userPrompt }
+            ]
+          }
         ],
+        generationConfig: {
+          temperature: 0.65,
+          maxOutputTokens: 16000,
+        }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
       throw new Error("AI generation failed");
     }
 
     const data = await response.json();
-    const rawContent = data.choices?.[0]?.message?.content || "";
+    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     let report;
     try {
