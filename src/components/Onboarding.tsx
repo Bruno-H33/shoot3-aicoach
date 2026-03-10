@@ -37,9 +37,9 @@ const niveaux = [
 ];
 
 const pratiques = [
-  { id: "ballon", label: "Au Ballon", desc: "Session d'entraînement de tir." },
-  { id: "libre", label: "Tir Libre", desc: "Je m'entraîne seul, hors match." },
-  { id: "match", label: "En Match", desc: "Situation de jeu réelle." },
+  { id: "ballon", label: "ROUTINE PERSO", desc: "Session d'entraînement au tir." },
+  { id: "libre", label: "PRÉPA LIBRE", desc: "Entraînement individuel. Focus technique." },
+  { id: "match", label: "PRÉPA MATCH", desc: "Situation de jeu. Intensité max." },
 ];
 
 const postes = [
