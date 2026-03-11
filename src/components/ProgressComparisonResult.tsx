@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Share2, CheckCircle } from "lucide-react";
+import { TrendingUp, Share2, CircleCheck as CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProgressComparisonResultProps {

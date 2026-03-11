@@ -14,6 +14,11 @@ import NoCreditsModal from "@/components/NoCreditsModal";
 import DevTools from "@/components/DevTools";
 import CheckupRequiredModal from "@/components/CheckupRequiredModal";
 import ProgressComparisonModal from "@/components/ProgressComparisonModal";
+import { StarterPackPaywall } from "@/components/StarterPackPaywall";
+import { Day7LockModal } from "@/components/Day7LockModal";
+import { ProgressComparisonResult } from "@/components/ProgressComparisonResult";
+import { TimeTravelButton } from "@/components/TimeTravelButton";
+import { useFunnelStatus } from "@/hooks/useFunnelStatus";
 import { useFreeTrial } from "@/hooks/useFreeTrial";
 
 type View = "splash" | "onboarding" | "camera" | "auth-prompt" | "dashboard" | "report";
@@ -47,6 +52,10 @@ const Index = () => {
   const [showProgressComparison, setShowProgressComparison] = useState(false);
   const [isCheckupMode, setIsCheckupMode] = useState(false);
   const { needsCheckup, hasCompletedCheckup, refetch: refetchTrial } = useFreeTrial();
+  const { userStatus, testCount, daysRemaining, updateUserStatus, incrementTestCount, simulateTimeTravel, reload: reloadFunnel } = useFunnelStatus();
+  const [showStarterPaywall, setShowStarterPaywall] = useState(false);
+  const [showDay7Lock, setShowDay7Lock] = useState(false);
+  const [showJ1J7Comparison, setShowJ1J7Comparison] = useState(false);
 
   // Fetch user credits
   const fetchCredits = useCallback(async (userId: string) => {
@@ -67,6 +76,13 @@ const Index = () => {
       setShowCheckupModal(true);
     }
   }, [user, needsCheckup, hasCompletedCheckup, view, showCheckupModal, showProgressComparison]);
+
+  // Show Day 7 lock modal when status is locked
+  useEffect(() => {
+    if (user && userStatus === 'locked' && testCount === 1 && view === "dashboard" && !showDay7Lock) {
+      setShowDay7Lock(true);
+    }
+  }, [user, userStatus, testCount, view, showDay7Lock]);
 
   // Handle payment success redirect
   useEffect(() => {
@@ -260,6 +276,10 @@ const Index = () => {
         if (id) setCurrentAnalysisId(id);
       });
 
+      // Increment test count for funnel tracking
+      await incrementTestCount();
+      await reloadFunnel();
+
       if (isCheckupMode) {
         await supabase.from("progress_checkups").insert({
           user_id: user.id,
@@ -273,7 +293,16 @@ const Index = () => {
         setShowProgressComparison(true);
       } else {
         setView("dashboard");
-        setShowPaywall(true);
+
+        // Funnel logic: Show starter pack paywall on first test for free users
+        if (userStatus === 'free' && testCount === 0) {
+          setShowStarterPaywall(true);
+        } else if (userStatus === 'locked' && testCount === 1) {
+          // Show J1 vs J7 comparison after second test
+          setShowJ1J7Comparison(true);
+        } else {
+          setShowPaywall(true);
+        }
       }
     } else {
       sessionStorage.setItem("s3_pending_auth_flow", JSON.stringify({
@@ -324,6 +353,28 @@ const Index = () => {
     setActiveTab("studio");
   };
 
+  const handleStarterPackPurchase = async () => {
+    // Simulate purchase of 3.99€ starter pack
+    await updateUserStatus('trial');
+    setShowStarterPaywall(false);
+    await reloadFunnel();
+  };
+
+  const handleDay7StartTest = () => {
+    setShowDay7Lock(false);
+    setView("camera");
+  };
+
+  const handleJ1J7ShareToParents = () => {
+    // Keep modal open but show success message (toast handled in component)
+  };
+
+  const handleJ1J7SimulateElite = async () => {
+    await updateUserStatus('elite');
+    setShowJ1J7Comparison(false);
+    await reloadFunnel();
+  };
+
   const displayName = localStorage.getItem("s3_user_pseudo") || userName || user?.user_metadata?.full_name || user?.user_metadata?.name || "Joueur";
 
   return (
@@ -353,15 +404,24 @@ const Index = () => {
         )}
 
         {view === "dashboard" && (
-          <Dashboard
-            userName={displayName}
-            hasCompletedTest={hasCompletedTest || isRegistered}
-            onAnalyze={handleAnalyze}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            analysisId={currentAnalysisId}
-            onViewReport={(id) => { setCurrentAnalysisId(id); setView("report"); }}
-          />
+          <>
+            <Dashboard
+              userName={displayName}
+              hasCompletedTest={hasCompletedTest || isRegistered}
+              onAnalyze={handleAnalyze}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              analysisId={currentAnalysisId}
+              onViewReport={(id) => { setCurrentAnalysisId(id); setView("report"); }}
+              userStatus={userStatus}
+              daysRemaining={daysRemaining}
+            />
+            <TimeTravelButton
+              onTimeTravel={simulateTimeTravel}
+              daysRemaining={daysRemaining}
+              userStatus={userStatus}
+            />
+          </>
         )}
 
         {view === "report" && currentAnalysisId && (
@@ -399,6 +459,30 @@ const Index = () => {
               setView("dashboard");
             }}
             onUpgrade={handleProgressComparisonUpgrade}
+          />
+        )}
+
+        {showStarterPaywall && (
+          <StarterPackPaywall
+            open={showStarterPaywall}
+            onClose={() => setShowStarterPaywall(false)}
+            onPurchase={handleStarterPackPurchase}
+          />
+        )}
+
+        {showDay7Lock && (
+          <Day7LockModal
+            open={showDay7Lock}
+            onStartTest={handleDay7StartTest}
+          />
+        )}
+
+        {showJ1J7Comparison && (
+          <ProgressComparisonResult
+            open={showJ1J7Comparison}
+            onClose={() => setShowJ1J7Comparison(false)}
+            onShareToParents={handleJ1J7ShareToParents}
+            onSimulateElite={handleJ1J7SimulateElite}
           />
         )}
 

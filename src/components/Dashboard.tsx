@@ -10,6 +10,8 @@ import SniperEliteModal from "@/components/SniperEliteModal";
 import PassTeamModal from "@/components/PassTeamModal";
 import DrillVideos from "@/components/DrillVideos";
 import ProTab from "@/components/ProTab";
+import { TrialBanner } from "@/components/TrialBanner";
+import type { UserStatus } from "@/hooks/useFunnelStatus";
 
 const PRICES = {
   rapport: "price_1T345HRKXHvnBBog0jfr2XdU",
@@ -25,11 +27,13 @@ interface DashboardProps {
   onTabChange: (tab: string) => void;
   analysisId?: string | null;
   onViewReport?: (id: string) => void;
+  userStatus?: UserStatus;
+  daysRemaining?: number;
 }
 
-const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport }: DashboardProps) => {
+const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, onTabChange, analysisId, onViewReport, userStatus = 'free', daysRemaining = 0 }: DashboardProps) => {
   const { signOut, user } = useAuth();
-  const { isActive: trialActive, daysRemaining } = useFreeTrial();
+  const { isActive: trialActive, daysRemaining: legacyDaysRemaining } = useFreeTrial();
   const isAdmin = sessionStorage.getItem("s3_access_code") === "SHOOT3ADMIN";
   const [drillFilter, setDrillFilter] = useState<"Tout" | "Neuro" | "Méca">("Tout");
   const [eliteModalOpen, setEliteModalOpen] = useState(false);
@@ -38,6 +42,9 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [pastReports, setPastReports] = useState<Array<{ id: string; overall_score: number; created_at: string }>>([]);
   const [showAllReports, setShowAllReports] = useState(false);
+
+  // Determine if drills should be locked
+  const drillsLocked = userStatus === 'free' || userStatus === 'locked';
 
   // Daily reminder
   useEffect(() => {
@@ -108,7 +115,14 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
 
   return (
     <div className="mobile-container flex flex-col bg-background relative">
-      <div className="flex-1 overflow-y-auto pb-28">
+      {/* Trial Banner - Show for trial status */}
+      {userStatus === 'trial' && daysRemaining > 0 && (activeTab === 'studio' || activeTab === 'drills') && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40">
+          <TrialBanner daysRemaining={daysRemaining} />
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto pb-28" style={{ paddingTop: userStatus === 'trial' && daysRemaining > 0 && (activeTab === 'studio' || activeTab === 'drills') ? '52px' : '0' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-12 pb-4">
           <button onClick={() => onTabChange("studio")} className="flex items-center gap-3 active:opacity-70 transition-opacity">
@@ -501,23 +515,25 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
         {/* ==================== DRILLS ==================== */}
         {activeTab === "drills" && (
           <>
-            {!hasCompletedTest && !trialActive ? (
+            {drillsLocked ? (
               <div className="flex flex-col items-center justify-center h-96 px-8 text-center animate-fade-in-up">
                 <Dumbbell className="w-16 h-16 text-muted-foreground/40 mb-6" />
                 <h2 className="font-sport text-4xl text-foreground">
                   PROGRAMMES <span className="text-primary">VERROUILLÉS</span>
                 </h2>
                 <p className="font-body text-sm text-muted-foreground mt-4 mb-8 leading-relaxed">
-                  Passe ton test IA. Nous te recommanderons des exercices adaptés à tes défauts.
+                  {userStatus === 'free'
+                    ? "Passe ton test IA et débloque le Starter Pack pour accéder aux exercices."
+                    : "Ton essai est terminé. Lance ton 2ème test pour débloquer la suite."}
                 </p>
                 <button onClick={onAnalyze} className="btn-primary">
-                  LANCER MON TEST IA
+                  {userStatus === 'free' ? 'LANCER MON TEST IA' : 'LANCER MON 2ÈME TEST'}
                 </button>
               </div>
             ) : (
               <div className="px-5 space-y-4 animate-fade-in-up">
                 {/* Trial Banner */}
-                {trialActive && (
+                {(userStatus === 'trial' || userStatus === 'elite') && (
                   <div
                     className="rounded-2xl p-4 border border-green-500/30 relative overflow-hidden"
                     style={{ background: "linear-gradient(135deg, rgba(10, 30, 15, 0.95), rgba(15, 45, 20, 0.9))" }}
@@ -528,15 +544,17 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                           <Zap className="w-5 h-5 text-green-400" />
                         </div>
                         <div>
-                          <p className="font-sport text-base text-foreground tracking-wider">SEMAINE {Math.max(1, Math.ceil((7 - daysRemaining + 1) / 7))} D'ESSAI GRATUIT</p>
+                          <p className="font-sport text-base text-foreground tracking-wider">
+                            {userStatus === 'elite' ? 'ACCÈS ELITE' : `SEMAINE ${Math.max(1, Math.ceil((7 - daysRemaining + 1) / 7))} D'ESSAI GRATUIT`}
+                          </p>
                           <p className="font-body text-xs text-green-400">
-                            {daysRemaining} jour{daysRemaining > 1 ? "s" : ""} restant{daysRemaining > 1 ? "s" : ""}
+                            {userStatus === 'elite' ? 'Accès illimité aux exercices' : `${daysRemaining} jour${daysRemaining > 1 ? "s" : ""} restant${daysRemaining > 1 ? "s" : ""}`}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-sport text-2xl text-green-400">{daysRemaining}</p>
-                        <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">Jours</p>
+                        <p className="font-sport text-2xl text-green-400">{userStatus === 'elite' ? '∞' : daysRemaining}</p>
+                        <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">{userStatus === 'elite' ? 'Elite' : 'Jours'}</p>
                       </div>
                     </div>
                   </div>
@@ -571,7 +589,7 @@ const Dashboard = ({ userName, hasCompletedTest = false, onAnalyze, activeTab, o
                 </div>
 
                 {/* Free Trial Videos */}
-                {trialActive && (
+                {(userStatus === 'trial' || userStatus === 'elite') && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-green-400" />
